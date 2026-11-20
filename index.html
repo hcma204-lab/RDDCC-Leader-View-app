@@ -907,7 +907,6 @@ function render(){
   if (ST.error) bn.push(`<div class="banner err"><b>載入失敗：</b>${esc(ST.error)}</div>`);
   $('#banner').innerHTML = bn.join('');
   $('#btnLogout').hidden = !S.token;                              // 有存 token 才顯示「登出」
-  $('#btnAI').hidden = !aiReady();                                // 沒設定即時 AI（橋接）就不顯示這顆按鈕；排程產生的 AI 面板不受影響
   if (!A) {
     main.innerHTML = ST.loading ? '<div class="card welcome">載入中…</div>' : onboardCard();
     return;
