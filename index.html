@@ -129,6 +129,11 @@ dialog legend{font-size:13px;color:var(--muted);padding:0 6px}
 .tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;border-radius:6px;padding:4px 8px;max-width:260px;display:none}
 .welcome{text-align:center;padding:40px 16px}
 .welcome h2{justify-content:center}
+/* 第一次使用引導 */
+.ob h2{font-size:17px}
+.ob-steps{margin:6px 0 12px;padding-left:22px;display:grid;gap:8px}
+.ob-safe{background:var(--warn-bg);border:1px solid var(--warn);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13.5px}
+.ob-safe ul{margin:4px 0 0;padding-left:20px;display:grid;gap:3px}
 /* AI 排程產出 */
 .aip{margin-bottom:14px;border-left:5px solid var(--s1)}
 .aip-sum{font-size:16px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
@@ -245,6 +250,7 @@ table.heat-t{min-width:560px}
       <button class="btn primary" id="btnAI">AI 助理</button>
       <button class="btn" id="btnTheme" title="切換深淺色">深淺色</button>
       <button class="btn" id="btnSettings">設定</button>
+      <button class="btn" id="btnLogout" hidden title="清除這台電腦儲存的 monday token">登出</button>
     </div>
   </header>
   <nav class="views" id="views" role="tablist" aria-label="頁面">
@@ -282,6 +288,12 @@ table.heat-t{min-width:560px}
         <input type="text" id="fBoard" inputmode="numeric">
       </label>
       <div class="row"><button type="button" class="btn small" id="btnTest">測試 monday 連線</button><span class="note" id="testOut"></span></div>
+      <details class="note"><summary>怎麼取得 token？</summary>
+        <ol style="margin:6px 0 0;padding-left:20px">
+          <li>在 monday 點右上角<b>頭像 → Developers</b>。</li>
+          <li>選 <b>My access tokens</b>，在 API token 旁按 <b>Show</b>，再按複製。</li>
+          <li>貼到上面的欄位。<b>不要貼給任何人</b>：它等同你的 monday 帳號權限。</li>
+          <li>找不到 Developers：管理員尚未開放，請他允許你保留這個功能。</li></ol></details>
     </fieldset>
     <fieldset>
       <legend>AI 端點（選填；不設定也能用所有本機分析）</legend>
@@ -448,10 +460,19 @@ async function mondayQuery(query, variables){
       body: JSON.stringify({ query, variables }) });
   } catch (e) { throw new Error('連不到 monday（網路或公司防火牆擋住 api.monday.com）：' + e.message); }
   const j = await r.json().catch(() => null);
-  if (!j) throw new Error('monday 回應不是 JSON（HTTP ' + r.status + '）');
-  if (j.errors && j.errors.length) throw new Error(j.errors.map(e => e.message).join('；'));
-  if (j.error_message) throw new Error(j.error_message);
+  if (!j) throw new Error(r.status === 401 ? mondayErr(401, '') : 'monday 回應不是 JSON（HTTP ' + r.status + '）');
+  if (j.errors && j.errors.length) throw new Error(mondayErr(r.status, j.errors.map(e => e.message).join('；')));
+  if (j.error_message) throw new Error(mondayErr(r.status, j.error_message));
   return j.data;
+}
+function mondayErr(status, raw){                                // 把 monday 的英文錯誤翻成看得懂的處理方式
+  raw = String(raw || '');
+  if (status === 401 || /not authenticated|invalid token/i.test(raw))
+    return 'monday 拒絕了這組 token（貼錯、已被重新產生，或被管理員撤銷）。請到「設定」重新貼上新的 token，或按右上角「登出」重來。';
+  if (/DAILY_LIMIT/i.test(raw)) return '今天 monday 的 API 呼叫次數已用完，明天（UTC 午夜後）會重置，請稍後再試。';
+  if (/COMPLEXITY|rate limit|minute limit|429/i.test(raw) || status === 429) return 'monday 暫時限流，請等一分鐘後按「重新整理」。';
+  if (/permission|not allowed|forbidden|unauthorized/i.test(raw) || status === 403) return '你的 monday 帳號沒有權限讀取這個資料（' + raw + '）。請確認你是「研發文管課」工作區的成員。';
+  return raw || ('monday 回應錯誤（HTTP ' + status + '）');
 }
 
 function itemFragment(){
@@ -465,7 +486,7 @@ async function fetchActive(){
   const F = itemFragment(), raw = [];
   let d = await mondayQuery(`query($b:[ID!]){ boards(ids:$b){ items_page(limit:200, query_params:{rules:[{column_id:"${CONFIG.columns.status}", compare_value:${JSON.stringify(CONFIG.statusFilterIndexes)}, operator:any_of}]}){ cursor items{ ${F} } } } }`, { b:[S.boardId] });
   let page = d.boards && d.boards[0] && d.boards[0].items_page;
-  if (!page) throw new Error('找不到看板 ' + S.boardId + '（確認看板 ID，以及你的帳號是否有權限）');
+  if (!page) throw new Error('看不到看板 ' + S.boardId + '：請確認看板 ID 正確，而且你的 monday 帳號是「研發文管課」工作區的成員（封閉型工作區只有成員看得到）。');
   raw.push(...page.items);
   for (let n = 0; page.cursor && n < 30; n++) {
     d = await mondayQuery(`query($c:String!){ next_items_page(limit:200, cursor:$c){ cursor items{ ${F} } } }`, { c:page.cursor });
@@ -854,6 +875,29 @@ function demoDetail(it){
 function chip(sev){ const s = SEV[sev]; return `<span class="chip ${sev === 'crit' ? 'crit' : sev}" aria-label="${s.label}">${s.glyph} ${s.label}</span>`; }
 const link = i => `<a href="${esc(i.url)}" target="_blank" rel="noopener">${esc(i.name)}</a>`;
 
+/* 第一次使用的引導（主管不需要找人問，照圖文做即可）*/
+const ADMIN_MSG = `您好，研發文管課使用一個內部進度儀表板，只讀取「研發文管課-工作進度追蹤」看板，用來掌握團隊進度。
+
+想請您協助：允許下列主管保留「頭像 → Developers → My access tokens」功能，讓他們各自產生個人 API token（權限等同本人帳號，只存在各人自己的瀏覽器，不會外流）：
+（主管姓名：＿＿＿＿＿＿）
+
+如果公司不開放個人 token，也可以改由管理員安裝一個唯讀的 monday App，讓同仁用 monday 帳號登入。謝謝！`;
+function onboardCard(){
+  return `<div class="card ob"><h2>歡迎使用主管儀表板 <small>第一次使用，約 1 分鐘</small></h2>
+    <ol class="ob-steps">
+      <li><b>取得你的 monday token</b>：在 monday 點右上角<b>頭像 → Developers → My access tokens → Show</b>，按複製。
+        <div class="note">找不到 Developers？代表管理員尚未開放，請按下方「複製給管理員的說明」，貼給管理員。</div></li>
+      <li><b>貼到這裡</b>：按「開啟設定」，把 token 貼到第一個欄位，按「測試 monday 連線」，看到 ✔ 後按「儲存並載入」。</li>
+      <li><b>完成</b>：之後每次打開都會自動載入最新資料，不用再貼。</li>
+    </ol>
+    <div class="ob-safe"><b>請注意</b><ul>
+      <li>這串 token 等同你的 monday 帳號權限（可讀、可改），<b>不要貼給任何人，也不要貼到聊天或文件</b>。</li>
+      <li>它只存在這台電腦的瀏覽器；共用電腦請在設定取消「記住」，用完按右上角「登出」。</li>
+      <li>你只看得到自己在 monday 有權限的看板（需要是「研發文管課」工作區的成員）。</li>
+      <li>換電腦要重做一次；token 失效或遺失，到 monday 重新產生即可（舊的會立刻失效）。</li></ul></div>
+    <div class="row"><button class="btn primary" data-act="settings">開啟設定</button><button class="btn" data-act="demo">先看示範資料</button><button class="btn" data-act="adminMsg">複製給管理員的說明</button></div></div>`;
+}
+
 function render(){
   const main = $('#main'), A = ST.A;
   document.querySelectorAll('#views .tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === ST.view)));
@@ -862,10 +906,10 @@ function render(){
   if (S.demo) bn.push('<div class="banner demo"><b>目前是示範資料</b>（全部是假資料，沒有連 monday）。到「設定」貼上 monday API token 就會換成真實資料。</div>');
   if (ST.error) bn.push(`<div class="banner err"><b>載入失敗：</b>${esc(ST.error)}</div>`);
   $('#banner').innerHTML = bn.join('');
+  $('#btnLogout').hidden = !S.token;                              // 有存 token 才顯示「登出」
+  $('#btnAI').hidden = !aiReady();                                // 沒設定即時 AI（橋接）就不顯示這顆按鈕；排程產生的 AI 面板不受影響
   if (!A) {
-    main.innerHTML = ST.loading ? '<div class="card welcome">載入中…</div>' :
-      `<div class="card welcome"><h2>還沒有資料</h2><p style="color:var(--ink2)">這個頁面把 monday 看板當資料庫。<br>貼上你的 monday API token 就能讀取；也可以先看示範資料。</p>
-       <div class="row" style="justify-content:center"><button class="btn primary" data-act="settings">開啟設定</button><button class="btn" data-act="demo">看示範資料</button></div></div>`;
+    main.innerHTML = ST.loading ? '<div class="card welcome">載入中…</div>' : onboardCard();
     return;
   }
   if (ST.view === 'weekly') { renderWeekly(main); return; }
@@ -1419,6 +1463,10 @@ $('#frm').addEventListener('submit', async () => {
   if (S.notify && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
   saveSettings(); schedule(); ST.A = null; load();
 });
+$('#btnLogout').onclick = () => {                                // 登出：清掉這台電腦存的 monday token（共用電腦用完請按）
+  if (!confirm('登出會清除這台電腦儲存的 monday token，之後要重新貼上。確定嗎？')) return;
+  S.token = ''; S.demo = false; saveSettings(); lsDel('cfdash.hist'); ST.A = null; ST.items = []; ST.done = []; ST.ai = {}; ST.error = null; render();
+};
 $('#btnRefresh').onclick = load;
 $('#btnAI').onclick = () => openAI('brief');
 $('#btnCloseAI').onclick = () => $('#drawer').classList.remove('open');
@@ -1443,6 +1491,7 @@ document.addEventListener('click', e => {
   else if (a === 'wkPrint') window.print();
   else if (a === 'wkAI') wkAI();
   else if (a === 'hsOwner') { ST.wk.owner = b.dataset.owner; ST.wk.focus = false; setView('weekly'); }
+  else if (a === 'adminMsg') copyText(ADMIN_MSG);
   else if (a === 'gmCopy') copyText(gmText(WKG));
   else if (a === 'gmAI') gmAI();
 });
