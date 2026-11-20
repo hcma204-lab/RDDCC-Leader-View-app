@@ -134,6 +134,10 @@ dialog legend{font-size:13px;color:var(--muted);padding:0 6px}
 .ob-steps{margin:6px 0 12px;padding-left:22px;display:grid;gap:8px}
 .ob-safe{background:var(--warn-bg);border:1px solid var(--warn);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13.5px}
 .ob-safe ul{margin:4px 0 0;padding-left:20px;display:grid;gap:3px}
+.bind{border:1px solid var(--accent,#3b82f6);border-radius:10px;padding:10px 12px;margin:0 0 12px}
+.bind .bind-st{margin:6px 0;font-size:14px;white-space:pre-line}
+.bind .bind-st.ok{color:var(--ok,#16a34a)}.bind .bind-st.bad{color:var(--bad,#dc2626)}
+.bind ol{margin:6px 0 0;padding-left:20px;display:grid;gap:3px;font-size:13px}
 /* AI 排程產出 */
 .aip{margin-bottom:14px;border-left:5px solid var(--s1)}
 .aip-sum{font-size:16px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
@@ -297,6 +301,16 @@ table.heat-t{min-width:560px}
     </fieldset>
     <fieldset>
       <legend>AI 端點（選填；不設定也能用所有本機分析）</legend>
+      <div class="bind" id="bindBox">
+        <b>綁定我的 Claude 帳號</b>（不需要 API key，用公司 Claude 帳號）
+        <div class="bind-st" id="bindSt">尚未偵測</div>
+        <div class="row"><button type="button" class="btn small primary" id="btnBind">綁定我的 Claude 帳號</button><button type="button" class="btn small" id="btnBindCheck">偵測狀態</button></div>
+        <details><summary>第一次要做什麼？</summary><ol>
+          <li>在這台電腦啟動橋接：雙擊資料夾裡的 <b>start-claude-bridge.bat</b>（想開機自動啟動，再雙擊 <b>install-bridge-autostart.bat</b>）。</li>
+          <li>按「綁定我的 Claude 帳號」。跳出的小視窗會帶你登入公司 Claude（只需一次），再按「允許」。</li>
+          <li>完成。連線碼會自動填好，不用手動貼。</li>
+          <li>限制：橋接只在你這台電腦有效；視窗要保持開著（或設開機自動啟動）。</li></ol></details>
+      </div>
       <label>類型
         <select id="fProv">
           <option value="none">不使用 AI</option>
@@ -1284,7 +1298,7 @@ async function callLLM(system, user){
     const base = (S.aiUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '').replace(/\/ask$/, '');
     let r;
     try { r = await fetch(base + '/ask', { method:'POST', headers:{ 'content-type':'application/json', Authorization:'Bearer ' + S.aiKey }, body:JSON.stringify({ system, user, model:S.aiModel || undefined }) }); }
-    catch (e) { throw new Error('連不到本機橋接程式（' + base + '）。請確認已雙擊 start-claude-bridge.bat 並保持視窗開著；若網頁放在 https 網站，瀏覽器可能會詢問是否允許存取本機網路，請選允許。'); }
+    catch (e) { throw new Error('連不到本機橋接程式（' + base + '）。請確認已啟動 start-claude-bridge.bat 並保持視窗開著（或到「設定」按「綁定我的 Claude 帳號」檢查狀態）；若網頁放在 https 網站，瀏覽器可能會詢問是否允許存取本機網路，請選允許。'); }
     const j = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(j.error || ('橋接程式錯誤 HTTP ' + r.status));
     return j.text || '';
@@ -1435,6 +1449,7 @@ function openSettings(){
   $('#fToken').value = S.token; $('#fBoard').value = S.boardId; $('#fProv').value = S.aiProvider; $('#fUrl').value = S.aiUrl; $('#fKey').value = S.aiKey; $('#fModel').value = S.aiModel;
   $('#fDemo').checked = S.demo; $('#fAuto').checked = S.auto; $('#fNotify').checked = S.notify; $('#fRemember').checked = S.remember; $('#testOut').textContent = '';
   syncProv(); dlg.showModal();
+  if (S.aiProvider === 'bridge') bridgeStatus(); else bindSay('', '尚未綁定。按下面的按鈕開始（只有要用 AI 問答／摘要時才需要）。');
 }
 $('#btnSettings').onclick = openSettings;
 $('#btnCancel').onclick = () => dlg.close();
@@ -1450,10 +1465,44 @@ $('#btnTestAI').onclick = async () => {                          // 用最少的
 };
 const PROV_HINT = {
   none: '',
-  bridge: '用你電腦上已登入的公司 Claude 帳號，不需要 API key。\n步驟：① 雙擊資料夾裡的 login-claude.bat，用公司帳號登入一次（只有第一次需要）；② 雙擊 start-claude-bridge.bat 啟動並保持視窗開著；③ 把視窗顯示的「連線碼」貼到下方。',
+  bridge: '用你電腦上已登入的公司 Claude 帳號，不需要 API key。\n建議直接按上方「綁定我的 Claude 帳號」自動完成；手動做法：啟動 start-claude-bridge.bat，把視窗顯示的「連線碼」貼到下方。',
   anthropic: '需要 Anthropic API key（和公司 Claude 企業版帳號是兩回事，要另外申請）。',
   openai: '需要端點網址；key 視端點而定（公司內部 LLM 若不需要可留空）。',
 };
+/* ── 綁定我的 Claude 帳號（橋接配對）：偵測橋接／登入狀態 → 開配對小視窗 → 收到連線碼自動填好 ── */
+const bridgeBase = () => ($('#fUrl').value.trim() || S.aiUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '').replace(/\/(ask|status|pair|health)$/, '');
+const bindSay = (cls, txt) => { const el = $('#bindSt'); el.className = 'bind-st ' + cls; el.textContent = txt; };
+async function bridgeStatus(){
+  const base = bridgeBase(); bindSay('', '偵測中…');
+  let s;
+  try { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 3000); const r = await fetch(base + '/status', { signal:ctl.signal }); clearTimeout(tm); s = await r.json(); }
+  catch { bindSay('bad', '✖ 找不到橋接程式（' + base + '）。\n請先在這台電腦雙擊 start-claude-bridge.bat 啟動，再按「偵測狀態」。\n（網頁若是 https 網址，瀏覽器可能詢問是否允許存取本機網路，請選允許。）'); return 'down'; }
+  if (!s || !s.bridge) { bindSay('bad', '✖ ' + base + ' 有回應，但不是 Claude 橋接程式。請確認網址。'); return 'down'; }
+  if (!s.claude) { bindSay('bad', '✖ 橋接已啟動，但這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。'); return 'noclaude'; }
+  if (s.loggedIn !== true) { bindSay('', '橋接已啟動，尚未登入 Claude。按「綁定我的 Claude 帳號」會引導你登入（只需一次）。'); return 'nologin'; }
+  const key = cleanKey($('#fKey').value);
+  if ($('#fProv').value === 'bridge' && key) {
+    try { const r = await fetch(base + '/health', { headers:{ Authorization:'Bearer ' + key } }); if (r.ok) { bindSay('ok', '✔ 已綁定，可以使用 AI（Claude 已登入）'); return 'bound'; } } catch {}
+    bindSay('bad', '連線碼已失效（橋接重新產生過）。請按「綁定我的 Claude 帳號」重新綁定。'); return 'stale';
+  }
+  bindSay('', '✔ 橋接就緒、Claude 已登入。按「綁定我的 Claude 帳號」完成最後一步。'); return 'ready';
+}
+$('#btnBindCheck').onclick = bridgeStatus;
+$('#btnBind').onclick = async () => {
+  if (location.protocol === 'file:') { bindSay('bad', '你是用本機檔案（file://）開啟儀表板，瀏覽器不允許自動綁定。\n請改用公開網址開啟；或把下面「類型」選 Claude Code，手動貼上橋接視窗顯示的連線碼。'); return; }
+  const st = await bridgeStatus(); if (st === 'down' || st === 'noclaude') return;
+  const w = window.open(bridgeBase() + '/pair?origin=' + encodeURIComponent(location.origin), 'cfdash-pair', 'width=520,height=700');
+  if (!w) bindSay('bad', '瀏覽器擋住了彈出視窗。請允許這個網站的彈出視窗後，再按一次。');
+};
+window.addEventListener('message', async e => {                  // 只接受「橋接位址」傳來的配對訊息
+  const d = e.data; if (!d || d.type !== 'cfdash-bridge-pair' || typeof d.token !== 'string') return;
+  let expected; try { expected = new URL(bridgeBase()).origin; } catch { return; }
+  if (e.origin !== expected) return;
+  const tok = cleanKey(d.token), url = bridgeBase();
+  $('#fProv').value = 'bridge'; $('#fUrl').value = url; $('#fKey').value = tok;
+  Object.assign(S, { aiProvider:'bridge', aiUrl:url, aiKey:tok });
+  saveSettings(); syncProv(); await bridgeStatus(); render();
+});
 const syncProv = () => { const v = $('#fProv').value; $('#provHint').textContent = PROV_HINT[v] || ''; if (v === 'bridge' && !$('#fUrl').value.trim()) $('#fUrl').value = 'http://127.0.0.1:8787'; };
 $('#fProv').addEventListener('change', syncProv);
 $('#frm').addEventListener('submit', async () => {

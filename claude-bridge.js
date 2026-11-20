@@ -103,16 +103,90 @@ function runClaude(text, model) {
   });
 }
 
+/* ── 配對（讓網頁一鍵綁定，不用手動貼連線碼）──
+ * 流程：網頁開 /pair?origin=<網頁來源> 小視窗 → 這裡確認登入狀態、顯示「哪個網站要綁定」→ 使用者按「允許」
+ *      → 用 postMessage 把連線碼「只」傳給該來源。連線碼不會寫在 HTML 裡，也不會經由跨站請求取得。
+ * 防護：Host 白名單（擋 DNS rebinding）、/pair/* 的 POST 必須同源、頁面禁止被 iframe、不帶 CORS。 */
+const SELF_ORIGINS = ['http://127.0.0.1:' + PORT, 'http://localhost:' + PORT];
+const sameOrigin = req => SELF_ORIGINS.includes(req.headers.origin) && (!req.headers['sec-fetch-site'] || req.headers['sec-fetch-site'] === 'same-origin');
+const parseOrigin = s => { try { const u = new URL(String(s)); return (u.protocol === 'https:' || u.protocol === 'http:') && u.origin === String(s).replace(/\/+$/, '') ? u.origin : null; } catch { return null; } };
+let loginCache = { t: 0, v: null }, loginProc = null;
+const loginStateCached = () => { if (Date.now() - loginCache.t > 2500) loginCache = { t: Date.now(), v: loginState() }; return loginCache.v; };
+function startLogin() {                                              // 代使用者執行 claude auth login --sso（會自動開瀏覽器）
+  if (loginProc) return 'running';
+  if (!CLAUDE) return 'noclaude';
+  loginProc = spawn(CLAUDE, ['auth', 'login', '--sso'], { cwd: WORKDIR, stdio: 'ignore', windowsHide: true, shell: useShell() });
+  const kill = setTimeout(() => { try { loginProc && loginProc.kill(); } catch {} }, 5 * 60 * 1000);
+  loginProc.on('close', () => { clearTimeout(kill); loginProc = null; loginCache.t = 0; });
+  loginProc.on('error', () => { clearTimeout(kill); loginProc = null; });
+  return 'started';
+}
+const PAIR_HTML = `<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>綁定 Claude 帳號</title><style>
+:root{color-scheme:light dark;font-family:system-ui,"Microsoft JhengHei",sans-serif}
+body{margin:0;padding:22px;line-height:1.6;background:Canvas;color:CanvasText}
+h1{font-size:18px;margin:0 0 12px}.box{border:1px solid #8886;border-radius:10px;padding:12px 14px;margin:12px 0}
+.origin{font-family:ui-monospace,Consolas,monospace;font-weight:700;word-break:break-all}
+button{font:inherit;padding:8px 16px;border-radius:8px;border:1px solid #8888;cursor:pointer}
+button.p{background:#3b82f6;color:#fff;border-color:#3b82f6}button:disabled{opacity:.45;cursor:not-allowed}
+.ok{color:#16a34a}.bad{color:#dc2626}.mu{opacity:.7;font-size:13px}</style></head><body>
+<h1>綁定我的 Claude 帳號</h1>
+<div class="box">這個網站要使用你電腦上的 Claude 帳號：<div class="origin" id="o"></div>
+<div class="mu">只有你按「允許」，連線碼才會傳給它。如果這不是你自己要綁定的網站，請直接關閉這個視窗。</div></div>
+<div class="box"><b>步驟 1　登入 Claude</b><div id="st">檢查中…</div>
+<div style="margin-top:8px"><button id="bl" hidden>用公司帳號登入（SSO）</button></div>
+<div class="mu" id="lh" hidden>已開啟瀏覽器，請在那裡完成登入；這裡會自動更新。若瀏覽器要求貼上授權碼，請改在終端機執行 claude auth login。</div></div>
+<div class="box"><b>步驟 2　允許</b><div style="margin-top:8px"><button class="p" id="ba" disabled>允許這個網站使用</button></div><div id="rs" style="margin-top:8px"></div></div>
+<script>
+var ORIGIN=__ORIGIN__;var $=function(i){return document.getElementById(i)};
+$('o').textContent=ORIGIN;var ok=false;
+function poll(){fetch('/status').then(function(r){return r.json()}).then(function(s){
+  var st=$('st');ok=s.claude&&s.loggedIn===true;
+  if(!s.claude){st.innerHTML='<span class="bad">✖ 這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。</span>';$('bl').hidden=true}
+  else if(ok){st.innerHTML='<span class="ok">✔ 已登入</span>';$('bl').hidden=true;$('lh').hidden=true}
+  else{st.innerHTML='<span class="bad">尚未登入</span>（只需要做一次）';$('bl').hidden=!!s.loginRunning;$('lh').hidden=!s.loginRunning}
+  $('ba').disabled=!ok}).catch(function(){$('st').innerHTML='<span class="bad">連不到橋接程式</span>'})}
+poll();setInterval(poll,1500);
+$('bl').onclick=function(){$('bl').hidden=true;$('lh').hidden=false;fetch('/pair/login',{method:'POST'}).catch(function(){})};
+$('ba').onclick=function(){
+  if(!window.opener){$('rs').innerHTML='<span class="bad">找不到原本的網頁。請回到儀表板「設定」按「綁定」重新開啟這個視窗。</span>';return}
+  fetch('/pair/token',{method:'POST'}).then(function(r){return r.json()}).then(function(j){
+    if(!j.token)throw new Error(j.error||'失敗');
+    window.opener.postMessage({type:'cfdash-bridge-pair',token:j.token,url:location.origin},ORIGIN);
+    $('rs').innerHTML='<span class="ok">✔ 已綁定，這個視窗會自動關閉。</span>';$('ba').disabled=true;setTimeout(function(){window.close()},1200)
+  }).catch(function(e){$('rs').innerHTML='<span class="bad">✖ '+e.message+'</span>'})};
+</script></body></html>`;
+
 /* ── HTTP 伺服器 ── */
 const server = http.createServer((req, res) => {
+  const hostHdr = String(req.headers.host || '').toLowerCase();
+  if (hostHdr !== '127.0.0.1:' + PORT && hostHdr !== 'localhost:' + PORT) { res.writeHead(403); return res.end('forbidden host'); }   // 擋 DNS rebinding
   const origin = req.headers.origin;
   const cors = { 'Access-Control-Allow-Origin': origin || '*', 'Vary': 'Origin', 'Access-Control-Allow-Headers': 'authorization,content-type',
     'Access-Control-Allow-Methods': 'GET,POST,OPTIONS', 'Access-Control-Allow-Private-Network': 'true', 'Access-Control-Max-Age': '600' };
   const send = (code, obj) => { res.writeHead(code, { ...cors, 'content-type': 'application/json; charset=utf-8' }); res.end(JSON.stringify(obj)); };
+  const sendPlain = (code, obj) => { res.writeHead(code, { 'content-type': 'application/json; charset=utf-8', 'cache-control': 'no-store' }); res.end(JSON.stringify(obj)); };   // 不帶 CORS：只給同源頁面
   if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
 
+  const url = req.url.split('?')[0];
+  if (req.method === 'GET' && url === '/status')                      // 不需連線碼、不含機密：讓網頁偵測橋接是否啟動、Claude 是否已登入
+    return send(200, { bridge: true, version: 2, claude: !!CLAUDE, loggedIn: loginStateCached(), loginRunning: !!loginProc });
+  if (req.method === 'GET' && url === '/pair') {
+    const o = parseOrigin(new URL(req.url, 'http://x').searchParams.get('origin'));
+    if (!o) { res.writeHead(400, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('網頁來源不正確（只支援 http／https 網址；用 file:// 開啟的頁面請手動貼連線碼）。'); }
+    res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer',
+      'content-security-policy': "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'self'; frame-ancestors 'none'" });
+    return res.end(PAIR_HTML.replace('__ORIGIN__', JSON.stringify(o).replace(/</g, '\\u003c')));
+  }
+  if (req.method === 'POST' && (url === '/pair/token' || url === '/pair/login')) {
+    if (!sameOrigin(req)) return sendPlain(403, { error: '只接受橋接配對視窗本身的請求' });
+    if (url === '/pair/token') return loginStateCached() === true ? sendPlain(200, { token: TOKEN }) : sendPlain(409, { error: '請先完成 Claude 登入' });
+    const r = startLogin();
+    return sendPlain(r === 'noclaude' ? 500 : 200, r === 'noclaude' ? { error: '找不到 Claude' } : { status: r });
+  }
+
   const given = (req.headers.authorization || '').replace(/^Bearer\s+/i, '').trim();
-  if (!safeEqual(given, TOKEN)) return send(401, { error: '連線碼不正確。請把橋接程式視窗顯示的連線碼，貼到儀表板「設定」的連線碼欄位。' });
+  if (!safeEqual(given, TOKEN)) return send(401, { error: '連線碼不正確或已更換。請到儀表板「設定」按「綁定我的 Claude 帳號」重新綁定。' });
 
   if (req.method === 'GET' && req.url.startsWith('/health')) return send(200, { ok: true, claude: !!CLAUDE, loggedIn: loginState(), busy });
   if (!(req.method === 'POST' && req.url.startsWith('/ask'))) return send(404, { error: '不支援的路徑' });
@@ -149,6 +223,7 @@ server.listen(PORT, HOST, () => {
   console.log(' Claude：' + (CLAUDE || '找不到！請先安裝 Claude 桌面 App 或 Claude Code'));
   const li = loginState();
   console.log(' 登入狀態：' + (li === true ? '✔ 已登入' : li === false ? '✖ 尚未登入 → 請先雙擊 login-claude.bat 登入公司帳號（只需一次）' : '無法判斷'));
-  console.log('\n 儀表板「設定」→ AI 類型選「Claude Code」，貼上上面的連線碼。');
+  console.log('\n 最簡單：儀表板「設定」→ AI 端點 →「綁定我的 Claude 帳號」，會自動完成，不用貼連線碼。');
+  console.log(' 手動：AI 類型選「Claude Code」，貼上上面的連線碼。');
   console.log(' 使用期間請保持這個視窗開著；關閉視窗即停止。\n');
 });
