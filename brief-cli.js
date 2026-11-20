@@ -89,12 +89,16 @@ async function setup() {
   rl._writeToOutput = s => { if (muted) return; w.call(rl, s); };
   const token = await new Promise(res => { rl.question('token: ', a => { rl.close(); res(a.replace(/[\s"'「」“”]/g, '')); }); muted = true; });
   console.log('');
-  if (!token) fail('沒有輸入 token');
+  if (!token) { console.error('✖ 沒有收到任何字元：可能貼上沒成功，或還沒貼就按了 Enter。請重新執行一次，並在 token: 後面按右鍵貼上（畫面不會顯示內容，這是正常的），再按 Enter。'); process.exitCode = 1; return; }
+  console.log('已收到 ' + token.length + ' 個字元' + (token.length < 100 ? '（偏短：一般 monday token 約 200 個字元以上，可能複製到別的東西了）' : '') + '，驗證中…');
   try {
     const d = await gql(token, 'query{ me{ name } }');
     fs.writeFileSync(TOKEN_FILE, token, { mode: 0o600 });
     console.log('✔ 連線成功：' + d.me.name + '\n  token 已存到：' + TOKEN_FILE + '（只在你的使用者資料夾，不在專案資料夾）');
-  } catch (e) { fail('token 無效或連不到 monday：' + e.message); }
+  } catch (e) {
+    console.error('✖ 驗證失敗（monday 回覆：' + e.message + '）。\n  請確認複製的是 monday「Developers → My access tokens」裡的 API token，完整、前後沒有多餘文字；若公司關閉了個人 token，需要請管理員開放。');
+    process.exitCode = 1;     // 不用 process.exit，避免 Windows 上 Node 結束時的當機訊息
+  }
 }
 
 /* ── analyze ── */
