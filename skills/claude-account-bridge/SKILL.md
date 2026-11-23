@@ -63,7 +63,7 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 
 ## 踩過的雷（省你重走一遍）
 
-- **`.bat` 一開就閃退**：含中文的 UTF-8、LF 換行的批次檔在中文版 Windows 會解析失敗。`.bat` 一律**純 ASCII＋CRLF**，中文說明放網頁或 README。寫完用程式轉 CRLF 並檢查沒有 >127 的位元組。
+- **`.bat` 一開就閃退**：含中文的 UTF-8、LF 換行的批次檔在中文版 Windows 會解析失敗。`.bat` 一律**純 ASCII＋CRLF**，中文說明放網頁或 README。寫完用程式轉 CRLF 並檢查沒有 >127 的位元組。**放進 git 時要加 `.gitattributes`：`*.bat -text`、`*.ps1 -text`**（`eol=crlf` 不會套用到 GitHub 的 ZIP 下載，會變回 LF；必須讓倉庫直接存 CRLF 原樣），並實際下載 ZIP 檢查換行。
 - **找不到 `claude`**：Claude 桌面 App 內嵌版不在 PATH，位於 `%LOCALAPPDATA%\Claude-Data\*\claude-code\<ver>\*\claude.exe`；程式依序找 `CLAUDE_BIN` → PATH → 這個資料夾（取最新版）。
 - **桌面 App 已登入 ≠ 單獨執行的 `claude` 已登入**：會顯示 `Not logged in`，需 `claude auth login --sso` 一次（配對視窗的「用公司帳號登入」按鈕會代跑；若瀏覽器要求貼授權碼，改在終端機手動執行）。
 - **企業版登入用 SSO**：`claude auth login --sso`（可加 `--email`）。
