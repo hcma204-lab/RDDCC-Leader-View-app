@@ -1,6 +1,6 @@
 ---
 name: claude-account-bridge
-description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已登入的 Claude 帳號」（含公司 Claude 企業版 SSO），不需要 API key、不扣 API 額度。做法是本機橋接程式（127.0.0.1）代跑 `claude -p`，網頁用「一鍵配對」綁定。需要在新專案加入「用我的 Claude 帳號做網頁 AI」、或使用者說「不要 API key／用公司 Claude 帳號／一次性登入／橋接」時使用。
+description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已登入的 Claude 帳號」（含公司 Claude 企業版 SSO），不需要 API key、不扣 API 額度。做法是本機橋接程式（127.0.0.1）代跑 `claude -p`，本機版全自動綁定。也包含「單一 HTML 直接讀 monday 看板（使用者貼自己的 token）＋AI 分析」的完整範本。需要在新專案或其他 HTML 加入「用我的 Claude 帳號做網頁 AI」、「HTML 結合 monday 與 AI」，或使用者說「不要 API key／用公司 Claude 帳號／一次性登入／橋接／monday 儀表板加 AI」時使用。
 ---
 
 # 網頁 AI 綁定使用者自己的 Claude 帳號（本機橋接）
@@ -13,6 +13,32 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 
 **不適用**：要讓很多人共用同一個 AI、或伺服器端自動執行 → 改用 API key（Anthropic Console）或後端服務。
 **要「主動、排程」的 AI（晨報、預警）** → 不要走網頁，改用 Claude 桌面 App 的「排程任務」（用同一個公司帳號、不需 key），見文末。
+
+## 最快上手：把另一個 HTML 變成「monday + AI」
+
+已有一份可直接改的完整範本：`templates/monday-ai-page.html`（單一檔案：貼 monday token → 讀看板 → 表格 → AI 摘要 → 綁定自己的 Claude）。已實測：本機版自動綁定、AI 正常回覆。
+
+1. 新資料夾放 `claude-bridge.js`、兩個 `.bat`＋`.ps1`（`templates/`），再把 `monday-ai-page.html` 存成同資料夾的 **`index.html`**（橋接只會提供這個檔名）。
+2. 改頁面裡 `CONFIG`：`monday.boardId`、`columns`（欄位 ID，用 monday 的 `get_board_info` 或欄位設定 → 進階取得）。
+3. 改 `render()`（你要的畫面）與 AI 提示詞（`askClaude(system, user)`）。
+4. 雙擊 `install-bridge-autostart.bat` → 開 `http://127.0.0.1:8787/` → 貼 token → AI 自動綁定。
+5. 發佈到 GitHub Pages 的話，公開網址只能用 monday 功能；AI 要用本機版（見踩雷）。
+
+**已有 HTML 想加 monday／AI 時**：不要整頁重寫，只貼元件——
+- 要 AI：貼 `templates/bridge-client.js`（需要頁面提供 `S`、`saveSettings()`、可選 `render()`，並加綁定區塊 `#bindSt`／`#btnBind`），用 `askClaude(system, user)` 呼叫。
+- 要 monday：貼 `templates/monday-client.js`（`mondayQuery`、`fetchBoardItems`、`aiContext`），改 `CONFIG`。
+- 兩個檔案可共存，函式名稱不衝突；`monday-ai-page.html` 就是由這兩個檔案原樣組成。
+
+### 結合 monday 的設計原則
+
+- **每人用自己的 monday token**：`Authorization` 直接放 token（不加 `Bearer`），加 `API-Version` 標頭；瀏覽器可直接呼叫 `api.monday.com/v2`（有 CORS），不需要後端。token 只存使用者自己的 `localStorage`，不寫進程式、網址、repo；要提供「登出」清除。使用者取得方式：monday 頭像 → Developers → My access tokens（沒有就請管理員開通）。
+- **權限天然隔離**：用誰的 token 就看到誰有權限的看板，不用自己做權限；看不到看板時提示「確認是工作區成員」，不要假裝沒資料。
+- **預設唯讀**：要寫回（改狀態、留言、建項目）一律先顯示將寫入的內容，讓使用者按確認才送出，並限制可寫的欄位。
+- **分頁**：`items_page(limit:200)` ＋ `next_items_page(cursor)`，設頁數上限（範本 30 頁）避免無限迴圈；只拉需要的欄位（`column_values(ids:[…])`），別抓整個看板。
+- **錯誤翻成人話**：401（token 錯）、`DAILY_LIMIT`、`COMPLEXITY`／429（限流）、403（無權限）各有明確處理，見 `mondayErr`。
+- **給 AI 的資料要瘦身**：只傳判斷需要的欄位（項目｜負責人｜狀態｜到期…），限筆數（約 150），並在提示詞要求「只根據提供的資料、不要編造」；不要把整個看板 JSON 或含個資、客戶機密的欄位丟進去。
+- **AI 只做判讀，數字自己算**：逾期天數、統計、排序用程式算好再給 AI；AI 負責找重點、寫建議。這樣結果可驗證、也省字數。
+- **AI 是選填**：沒綁定也要能看完整的 monday 資料，AI 按鈕只在可用時提示，不能讓整頁因此報錯。
 
 ## 為什麼不能直接在網頁登入
 
@@ -82,4 +108,11 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 
 ## 範本檔
 
-見 `templates/`：`claude-bridge.js`、`bridge-client.js`、`start-claude-bridge.bat`、`install-bridge-autostart.bat`／`.ps1`、`login-claude.bat`。
+見 `templates/`：
+- `claude-bridge.js`：橋接程式（Node 18+）
+- `bridge-client.js`：網頁端綁定與 `askClaude()`（本機版自動綁定＋公開網址的中性引導）
+- `monday-client.js`：網頁端讀 monday（`mondayQuery`、`fetchBoardItems`、`aiContext`）
+- `monday-ai-page.html`：上面兩者組成的完整單檔範本（存成 `index.html` 即為本機版入口）
+- `start-claude-bridge.bat`、`install-bridge-autostart.bat`／`.ps1`、`login-claude.bat`：純 ASCII＋CRLF
+
+- `build-monday-ai-page.js`：重組腳本。`monday-ai-page.html` 由 `bridge-client.js` 與 `monday-client.js` 原樣內嵌組成；改了這兩個元件檔，在 `templates` 資料夾執行 `node build-monday-ai-page.js` 重新產生範本頁，避免兩邊不一致。

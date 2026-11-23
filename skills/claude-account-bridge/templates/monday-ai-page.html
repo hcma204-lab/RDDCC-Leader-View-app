@@ -1,0 +1,255 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>monday + Claude AI 範本</title>
+<!-- 範本：把這個檔存成橋接程式資料夾裡的 index.html，開 http://127.0.0.1:8787/ 就是「本機版」（AI 自動綁定）。
+     改 CONFIG（看板 ID、欄位 ID）、把 render() 換成你要的畫面、把 AI 提示詞換成你的需求。 -->
+<style>
+  :root{--bg:#f6f7f9;--card:#fff;--ink:#1c2430;--mute:#5b6675;--line:#e1e5ea;--ok:#157347;--bad:#b3261e;--acc:#2b5fd9}
+  @media (prefers-color-scheme:dark){:root{--bg:#14181e;--card:#1d232c;--ink:#e8ecf1;--mute:#9aa6b4;--line:#2d3640;--ok:#5cc28a;--bad:#ff8a80;--acc:#7da7ff}}
+  *{box-sizing:border-box} body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.6 system-ui,"Microsoft JhengHei",sans-serif}
+  main{max-width:960px;margin:0 auto;padding:16px}
+  h1{font-size:20px;margin:8px 0 14px} h2{font-size:16px;margin:0 0 10px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:14px}
+  label{display:block;font-size:13px;color:var(--mute);margin:8px 0 4px}
+  input{width:100%;padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--ink);font:inherit}
+  button{padding:8px 14px;border:1px solid var(--line);border-radius:6px;background:var(--card);color:var(--ink);font:inherit;cursor:pointer}
+  button.primary{background:var(--acc);border-color:var(--acc);color:#fff} button[disabled]{opacity:.5;cursor:not-allowed}
+  .row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+  .bind-st{white-space:pre-wrap;font-size:13px;color:var(--mute);margin-top:8px} .bind-st.ok{color:var(--ok)} .bind-st.bad{color:var(--bad)}
+  table{width:100%;border-collapse:collapse;font-size:14px} th,td{text-align:left;padding:6px 8px;border-bottom:1px solid var(--line)} th{color:var(--mute);font-weight:600}
+  pre.ai{white-space:pre-wrap;margin:0;font:inherit} .err{color:var(--bad);white-space:pre-wrap}
+  .guide{font-size:13px;color:var(--mute);margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+  <h1>monday + Claude AI 範本</h1>
+
+  <section class="card">
+    <h2>設定</h2>
+    <label for="fToken">monday API token（只存在你自己的瀏覽器）</label>
+    <input id="fToken" type="password" autocomplete="off" placeholder="monday → 頭像 → Developers → My access tokens">
+    <label for="fBoard">看板 ID</label>
+    <input id="fBoard" inputmode="numeric" placeholder="看板網址 /boards/ 後面那串數字">
+    <div class="row"><button id="btnSave" class="primary">儲存並載入</button><button id="btnLogout">登出（清除 token）</button></div>
+    <div id="msg" class="err"></div>
+  </section>
+
+  <section class="card">
+    <h2>AI（選填，用你自己的 Claude 帳號）</h2>
+    <div id="bindSt" class="bind-st"></div>
+    <div class="row"><button id="btnBind">綁定我的 Claude 帳號</button><button id="btnBindCheck">偵測狀態</button></div>
+    <div id="bindGuide" class="guide">要用 AI：下載專案 ZIP → 雙擊 install-bridge-autostart.bat → 改開 http://127.0.0.1:8787/ 。不用 AI 也能使用其他功能。</div>
+  </section>
+
+  <section class="card"><h2>看板項目 <small id="cnt"></small></h2><div id="list">尚未載入。</div></section>
+
+  <section class="card">
+    <h2>AI 摘要</h2>
+    <div class="row"><button id="btnAI" class="primary">請 AI 找出需要注意的項目</button></div>
+    <pre id="aiOut" class="ai"></pre>
+  </section>
+</main>
+
+<script>
+/* ── 1. 設定與狀態（bridge-client.js 需要 S、saveSettings、render）── */
+const lsGet = k => { try { return localStorage.getItem(k); } catch { return null; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, v); } catch {} };
+const S = Object.assign({ token: '', boardId: '', aiProvider: 'none', aiUrl: '', aiKey: '' }, (() => { try { return JSON.parse(lsGet('app.settings') || '{}'); } catch { return {}; } })());
+const saveSettings = () => lsSet('app.settings', JSON.stringify(S));
+let ITEMS = [];
+const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+/* ── 2. Claude 橋接（原樣來自 templates/bridge-client.js）── */
+const $ = s => document.querySelector(s);
+const ST = window.ST || (window.ST = {});
+const DEFAULT_BRIDGE = 'http://127.0.0.1:8787';
+const cleanKey = s => String(s || '').replace(/[\s"'「」“”]/g, '');
+const bridgeBase = () => ST.localBridge ? location.origin : (S.aiUrl || DEFAULT_BRIDGE).replace(/\/+$/, '').replace(/\/(ask|status|pair|health)$/, '');
+const bindSay = (cls, txt) => { const el = $('#bindSt'); if (el) { el.className = 'bind-st ' + cls; el.textContent = txt; } };
+const bindSleep = ms => new Promise(r => setTimeout(r, ms));
+const syncBindUi = () => { const g = $('#bindGuide'); if (g) g.hidden = !!ST.localBridge; };
+const aiReady = () => S.aiProvider === 'bridge' && !!S.aiKey;
+
+function applyBinding(tok, url) {                                   // 綁定成功：存起來
+  Object.assign(S, { aiProvider: 'bridge', aiUrl: url, aiKey: tok });
+  saveSettings();
+}
+
+/* 偵測：橋接有沒有啟動 → Claude 有沒有登入 → 連線碼是否有效 */
+async function bridgeStatus() {
+  const base = bridgeBase(); bindSay('', '偵測中…');
+  let s;
+  try { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 3000); const r = await fetch(base + '/status', { signal: ctl.signal }); clearTimeout(tm); s = await r.json(); }
+  catch {
+    if (ST.localBridge) bindSay('bad', '✖ 橋接程式沒有回應。請確認工作排程器的「ClaudeBridgeDashboard」在執行，或重新雙擊 install-bridge-autostart.bat。');
+    else bindSay(S.aiProvider === 'bridge' ? 'bad' : '', '這個網址連不到你電腦上的橋接程式（還沒安裝，或瀏覽器擋住了公開網址連本機）。\n請照安裝步驟安裝並改用本機版：http://127.0.0.1:8787/\n（不需要 AI 的話可以忽略，其他功能都能正常使用。）');
+    return 'down';
+  }
+  if (!s || !s.bridge) { bindSay('bad', '✖ ' + base + ' 有回應，但不是 Claude 橋接程式。'); return 'down'; }
+  if (!s.claude) { bindSay('bad', '✖ 橋接已啟動，但這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。'); return 'noclaude'; }
+  if (s.loggedIn !== true) { bindSay('', '橋接已啟動，尚未登入 Claude。按「綁定」會引導你登入（只需一次）。'); return 'nologin'; }
+  const key = cleanKey(S.aiKey);
+  if (S.aiProvider === 'bridge' && key) {
+    try { const r = await fetch(base + '/health', { headers: { Authorization: 'Bearer ' + key } }); if (r.ok) { bindSay('ok', '✔ 已綁定，可以使用 AI（Claude 已登入）'); return 'bound'; } } catch {}
+    bindSay('bad', '連線碼已失效（橋接重新產生過）。請按「綁定」重新綁定。'); return 'stale';
+  }
+  bindSay('', '✔ 橋接就緒、Claude 已登入。按「綁定」完成最後一步。'); return 'ready';
+}
+
+/* 本機版：全自動，不需要彈出視窗。allowLogin=true 時，未登入會自動開瀏覽器登入並輪詢 */
+async function bindLocal(allowLogin) {
+  const base = location.origin;
+  let s; try { s = await (await fetch(base + '/status')).json(); } catch { return bridgeStatus(); }
+  if (!s.claude) { bindSay('bad', '✖ 這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。'); return false; }
+  if (s.loggedIn !== true) {
+    if (!allowLogin) { bindSay('', '尚未登入 Claude。按「綁定」會自動開啟瀏覽器讓你用公司帳號登入（只需一次）。'); return false; }
+    bindSay('', '已開啟瀏覽器，請用公司 Claude 帳號完成登入…完成後這裡會自動更新。\n（若瀏覽器要求貼上授權碼，請改在終端機執行 claude auth login --sso。）');
+    try { await fetch(base + '/pair/login', { method: 'POST' }); } catch {}
+    for (let i = 0; i < 150 && s.loggedIn !== true; i++) { await bindSleep(2000); try { s = await (await fetch(base + '/status')).json(); } catch {} }
+    if (s.loggedIn !== true) { bindSay('bad', '等待登入逾時。請再按一次「綁定」。'); return false; }
+  }
+  let r, j; try { r = await fetch(base + '/pair/token', { method: 'POST' }); j = await r.json(); } catch { r = null; }
+  if (!r || !r.ok || !j.token) { bindSay('bad', '✖ 綁定失敗：' + ((j && j.error) || '橋接程式沒有回應')); return false; }
+  applyBinding(j.token, base); await bridgeStatus(); if (typeof render === 'function') render(); return true;
+}
+
+$('#btnBindCheck') && ($('#btnBindCheck').onclick = bridgeStatus);
+$('#btnBind').onclick = async () => {
+  if (ST.localBridge) return bindLocal(true);
+  if (location.protocol === 'file:') { bindSay('', '用本機檔案（file://）開啟時，瀏覽器不允許自動綁定。請改用本機版網址 http://127.0.0.1:8787/。'); return; }
+  const st = await bridgeStatus(); if (st === 'down' || st === 'noclaude') return;
+  const w = window.open(bridgeBase() + '/pair?origin=' + encodeURIComponent(location.origin), 'bridge-pair', 'width=520,height=700');
+  if (!w) bindSay('bad', '瀏覽器擋住了彈出視窗。請允許後再按一次。');
+};
+
+/* 接收連線碼：只信任「橋接位址」傳來的訊息（來源不符一律忽略）。公開網址＋瀏覽器允許本機網路時才會用到 */
+window.addEventListener('message', async e => {
+  const d = e.data; if (!d || d.type !== 'cfdash-bridge-pair' || typeof d.token !== 'string') return;
+  let expected; try { expected = new URL(bridgeBase()).origin; } catch { return; }
+  if (e.origin !== expected) return;
+  applyBinding(cleanKey(d.token), bridgeBase()); await bridgeStatus(); if (typeof render === 'function') render();
+});
+
+/* 啟動：偵測是不是「本機版」；已登入 Claude 但還沒綁定／連線碼失效 → 靜默自動綁定 */
+(async function initLocalBridge() {
+  if (!/^https?:$/.test(location.protocol) || !/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return;
+  let s; try { s = await (await fetch('/status')).json(); } catch { return; }
+  if (!s || s.bridge !== true) return;
+  ST.localBridge = true; syncBindUi();
+  let ok = false;
+  if (aiReady()) { try { ok = (await fetch('/health', { headers: { Authorization: 'Bearer ' + S.aiKey } })).ok; } catch {} }
+  if (!ok && s.loggedIn === true) { await bindLocal(false); }
+})();
+
+/* 呼叫 AI：換掉你原本的 callLLM 即可 */
+async function askClaude(system, user, model) {
+  if (!aiReady()) throw new Error('尚未綁定 Claude。請到設定按「綁定我的 Claude 帳號」（不綁定也能使用其他功能）。');
+  const base = bridgeBase();
+  let r;
+  try { r = await fetch(base + '/ask', { method: 'POST', headers: { 'content-type': 'application/json', Authorization: 'Bearer ' + S.aiKey }, body: JSON.stringify({ system, user, model: model || undefined }) }); }
+  catch { throw new Error('連不到本機橋接程式（' + base + '）。請確認已啟動，或到設定按「綁定」檢查狀態。'); }
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || ('橋接程式錯誤 HTTP ' + r.status));
+  return j.text || '';
+}
+
+/* ── 3. monday 讀取（原樣來自 templates/monday-client.js）── */
+const CONFIG = {
+  monday: { apiUrl: 'https://api.monday.com/v2', apiVersion: '2025-04', boardId: 0 /* ← 改成你的看板 ID */ },
+  // 要讀的欄位 ID（monday 看板欄位設定 → 進階 可看到；或用 get_board_info 取得）
+  columns: { owner: 'person', status: 'status', timeline: 'timeline' },
+  // 只抓「進行中」等狀態時用：status 欄位的 index 清單（可省略，省略就抓全部）
+  statusFilterIndexes: null,
+};
+
+/* 單次查詢：回傳 data；錯誤一律翻成看得懂的中文 */
+async function mondayQuery(query, variables) {
+  let r;
+  try {
+    r = await fetch(CONFIG.monday.apiUrl, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': S.token, 'API-Version': CONFIG.monday.apiVersion },   // 注意：Authorization 直接放 token，不加 Bearer
+      body: JSON.stringify({ query, variables }),
+    });
+  } catch (e) { throw new Error('連不到 monday（網路或公司防火牆擋住 api.monday.com）：' + e.message); }
+  const j = await r.json().catch(() => null);
+  if (!j) throw new Error(r.status === 401 ? mondayErr(401, '') : 'monday 回應不是 JSON（HTTP ' + r.status + '）');
+  if (j.errors && j.errors.length) throw new Error(mondayErr(r.status, j.errors.map(e => e.message).join('；')));
+  if (j.error_message) throw new Error(mondayErr(r.status, j.error_message));
+  return j.data;
+}
+function mondayErr(status, raw) {
+  raw = String(raw || '');
+  if (status === 401 || /not authenticated|invalid token/i.test(raw)) return 'monday 拒絕了這組 token（貼錯、已被重新產生，或被管理員撤銷）。請重新貼上新的 token。';
+  if (/DAILY_LIMIT/i.test(raw)) return '今天 monday 的 API 呼叫次數已用完，明天（UTC 午夜後）會重置。';
+  if (/COMPLEXITY|rate limit|minute limit|429/i.test(raw) || status === 429) return 'monday 暫時限流，請等一分鐘後再試。';
+  if (/permission|not allowed|forbidden|unauthorized/i.test(raw) || status === 403) return '你的 monday 帳號沒有權限讀取這個資料（' + raw + '）。請確認你是該工作區的成員。';
+  return raw || ('monday 回應錯誤（HTTP ' + status + '）');
+}
+
+/* 讀整個看板（自動翻頁）。回傳 [{id,name,url,group,cols:{欄位ID: 文字}}] */
+async function fetchBoardItems(boardId) {
+  const ids = Object.values(CONFIG.columns);
+  const F = `id name url group{title} column_values(ids:${JSON.stringify(ids)}){id text}`;
+  const rules = CONFIG.statusFilterIndexes
+    ? `, query_params:{rules:[{column_id:"${CONFIG.columns.status}", compare_value:${JSON.stringify(CONFIG.statusFilterIndexes)}, operator:any_of}]}` : '';
+  let d = await mondayQuery(`query($b:[ID!]){ boards(ids:$b){ items_page(limit:200${rules}){ cursor items{ ${F} } } } }`, { b: [boardId || CONFIG.monday.boardId] });
+  let page = d.boards && d.boards[0] && d.boards[0].items_page;
+  if (!page) throw new Error('看不到看板 ' + boardId + '：請確認看板 ID 正確，而且你的 monday 帳號是該工作區的成員。');
+  const raw = [...page.items];
+  for (let n = 0; page.cursor && n < 30; n++) {                        // cursor 翻頁，最多 30 頁（6000 筆）
+    d = await mondayQuery(`query($c:String!){ next_items_page(limit:200, cursor:$c){ cursor items{ ${F} } } }`, { c: page.cursor });
+    page = d.next_items_page; raw.push(...page.items);
+  }
+  return raw.map(it => ({ id: it.id, name: it.name, url: it.url, group: it.group && it.group.title,
+    cols: Object.fromEntries(it.column_values.map(c => [c.id, c.text || ''])) }));
+}
+
+/* 測試 token 是否可用 */
+async function testMonday() { const d = await mondayQuery('query{ me{ name } }'); return d.me.name; }
+
+/* 給 AI 的內容：瘦身 + 限量。AI 只需要判斷用的欄位，不要整包丟 */
+const slimItem = it => [it.name, it.cols[CONFIG.columns.owner], it.cols[CONFIG.columns.status], it.cols[CONFIG.columns.timeline]].filter(Boolean).join('|');
+const aiContext = (items, limit = 150) => items.slice(0, limit).map(slimItem).join('\n');
+
+/* 用法範例（接 bridge-client.js 的 askClaude）：
+ *   const items = await fetchBoardItems();
+ *   const text = await askClaude('你是專案進度助理，用繁體中文、條列、不超過 8 點。', '今天是 ' + new Date().toISOString().slice(0,10) + '，以下是看板項目：\n' + aiContext(items) + '\n請找出需要主管注意的項目。');
+ */
+
+/* ── 4. 你的畫面與流程（改這裡）── */
+function render() {
+  $('#cnt').textContent = ITEMS.length ? '（' + ITEMS.length + ' 筆）' : '';
+  if (!ITEMS.length) { $('#list').textContent = S.token ? '沒有項目。' : '請先貼上 monday token 並儲存。'; return; }
+  const cols = Object.keys(CONFIG.columns);
+  $('#list').innerHTML = '<table><thead><tr><th>項目</th>' + cols.map(c => '<th>' + esc(c) + '</th>').join('') + '</tr></thead><tbody>' +
+    ITEMS.slice(0, 200).map(it => '<tr><td><a href="' + esc(it.url) + '" target="_blank" rel="noopener">' + esc(it.name) + '</a></td>' + cols.map(c => '<td>' + esc(it.cols[CONFIG.columns[c]]) + '</td>').join('') + '</tr>').join('') + '</tbody></table>';
+}
+async function load() {
+  $('#msg').textContent = '';
+  if (!S.token) { render(); return; }
+  try { $('#list').textContent = '載入中…'; ITEMS = await fetchBoardItems(S.boardId); } catch (e) { ITEMS = []; $('#msg').textContent = e.message; }
+  render();
+}
+$('#btnSave').onclick = () => { S.token = cleanKey($('#fToken').value); S.boardId = $('#fBoard').value.trim(); saveSettings(); load(); };
+$('#btnLogout').onclick = () => { S.token = ''; saveSettings(); ITEMS = []; $('#fToken').value = ''; render(); };
+$('#btnAI').onclick = async () => {
+  const out = $('#aiOut'); if (!ITEMS.length) { out.textContent = '請先載入看板項目。'; return; }
+  out.textContent = 'AI 思考中…'; $('#btnAI').disabled = true;
+  try {
+    out.textContent = await askClaude('你是專案進度助理。用繁體中文、條列、不超過 8 點，只根據提供的資料，不要編造。',
+      '今天是 ' + new Date().toISOString().slice(0, 10) + '。以下是看板項目（項目|負責人|狀態|時程）：\n' + aiContext(ITEMS) + '\n請找出需要主管注意的項目並說明原因。');
+  } catch (e) { out.textContent = '✖ ' + e.message; }
+  $('#btnAI').disabled = false;
+};
+$('#fToken').value = S.token; $('#fBoard').value = S.boardId || String(CONFIG.monday.boardId || '');
+if (!S.boardId && CONFIG.monday.boardId) S.boardId = String(CONFIG.monday.boardId);
+load();
+if (S.aiProvider === 'bridge') bridgeStatus(); else bindSay('', '尚未綁定 AI（選填）。');
+</script>
+</body>
+</html>
