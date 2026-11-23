@@ -169,6 +169,14 @@ const server = http.createServer((req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204, cors); return res.end(); }
 
   const url = req.url.split('?')[0];
+  if (req.method === 'GET' && (url === '/' || url === '/index.html')) {   // 本機版入口：http://127.0.0.1:PORT/ 直接開儀表板（與橋接同源，瀏覽器不會擋「公開網站連本機」）
+    try {
+      const html = fs.readFileSync(path.join(__dirname, 'index.html'));
+      res.writeHead(200, { 'content-type': 'text/html; charset=utf-8', 'cache-control': 'no-store', 'x-frame-options': 'DENY', 'referrer-policy': 'no-referrer' });
+      return res.end(html);
+    } catch { res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' }); return res.end('找不到 index.html（請把 index.html 放在 claude-bridge.js 同一個資料夾）。'); }
+  }
+  if (req.method === 'GET' && url === '/favicon.ico') { res.writeHead(204); return res.end(); }
   if (req.method === 'GET' && url === '/status')                      // 不需連線碼、不含機密：讓網頁偵測橋接是否啟動、Claude 是否已登入
     return send(200, { bridge: true, version: 2, claude: !!CLAUDE, loggedIn: loginStateCached(), loginRunning: !!loginProc });
   if (req.method === 'GET' && url === '/pair') {
@@ -219,6 +227,7 @@ server.listen(PORT, HOST, () => {
   console.log(' Claude 橋接程式 已啟動（只接受本機連線）');
   console.log('══════════════════════════════════════════════');
   console.log(' 網址：http://' + HOST + ':' + PORT);
+  console.log(' 本機版儀表板（AI 綁定最穩）：http://' + HOST + ':' + PORT + '/');
   console.log(' 連線碼：' + TOKEN);
   console.log(' Claude：' + (CLAUDE || '找不到！請先安裝 Claude 桌面 App 或 Claude Code'));
   const li = loginState();

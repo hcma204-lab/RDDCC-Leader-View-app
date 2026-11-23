@@ -34,13 +34,14 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 |---|---|---|
 | `GET /status` | 無（不含機密） | 網頁偵測橋接是否啟動、Claude 是否已登入 |
 | `GET /pair?origin=` + `POST /pair/token`、`/pair/login` | 同源 | 配對視窗：登入 Claude、使用者按「允許」後把連線碼 postMessage 給該來源 |
+| `GET /` | 無 | 提供 `index.html`（本機版入口，與橋接同源，避開瀏覽器的本機網路限制） |
 | `POST /ask`、`GET /health` | `Authorization: Bearer <連線碼>` | 實際問答 |
 
 ## 加到新專案的步驟
 
 1. **複製範本**（本 skill 的 `templates/`）到專案：
    - `claude-bridge.js`：橋接程式（Node 18+，無相依套件）。改常數：`TOKEN_FILE` 名稱、`PORT`。
-   - `start-claude-bridge.bat`、`install-bridge-autostart.bat`、`login-claude.bat`：**必須純 ASCII＋CRLF**（見踩雷）。
+   - `start-claude-bridge.bat`、`install-bridge-autostart.bat`＋`.ps1`、`login-claude.bat`：**必須純 ASCII＋CRLF**（見踩雷）。
    - `bridge-client.js`：網頁端程式片段（偵測狀態、開配對視窗、接收連線碼、呼叫 `/ask`）。
 2. **網頁設定頁**加一個區塊：狀態文字 `#bindSt`、按鈕「綁定我的 Claude 帳號」`#btnBind`、「偵測狀態」`#btnBindCheck`，以及（進階）網址欄 `#fUrl`、連線碼欄 `#fKey`。把 `bridge-client.js` 貼進頁面並依你的 `S`（設定物件）／`saveSettings()` 調整。
 3. **AI 呼叫**改成：`fetch(base + '/ask', { method:'POST', headers:{Authorization:'Bearer '+token}, body: JSON.stringify({system, user}) })`，回傳 `{text}`。
@@ -66,7 +67,10 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 - **找不到 `claude`**：Claude 桌面 App 內嵌版不在 PATH，位於 `%LOCALAPPDATA%\Claude-Data\*\claude-code\<ver>\*\claude.exe`；程式依序找 `CLAUDE_BIN` → PATH → 這個資料夾（取最新版）。
 - **桌面 App 已登入 ≠ 單獨執行的 `claude` 已登入**：會顯示 `Not logged in`，需 `claude auth login --sso` 一次（配對視窗的「用公司帳號登入」按鈕會代跑；若瀏覽器要求貼授權碼，改在終端機手動執行）。
 - **企業版登入用 SSO**：`claude auth login --sso`（可加 `--email`）。
-- **https 網頁連 `http://127.0.0.1`**：瀏覽器允許（loopback），但可能詢問「是否允許存取本機網路」，要選允許。
+- **https 公開網頁連 `http://127.0.0.1` 常被瀏覽器擋（Local Network Access）**：Chrome／Edge 近期版本會詢問或直接擋（`ERR_BLOCKED_BY_CLIENT`／`Failed to fetch`），企業電腦還可能被原則禁止。**最穩的解法：讓橋接程式自己提供儀表板頁面**（`GET /` 回傳同資料夾的 `index.html`），使用者改開 `http://127.0.0.1:8787/`，網頁與橋接同源，完全不受影響；公開網址仍可用於不需要 AI 的功能。
+  - **本機版全自動**：網頁啟動時 `fetch('/status')` 偵測自己是不是橋接提供的頁面（`ST.localBridge`）；是的話，已登入 Claude 就**靜默自動綁定**（同源 `POST /pair/token`，不用彈出視窗、不用按任何鈕）；未登入時按「綁定」→ `POST /pair/login` 並輪詢 `/status`，登入完成自動綁定。
+  - **公開網址上的其他人**：連不到橋接時**不要顯示紅色錯誤**（他們多半沒安裝）；改顯示中性的安裝引導（下載 ZIP → 雙擊 install 檔 → 開本機版網址），並註明「不用 AI 也能使用所有分析」。需求要寫清楚：Node.js 18+、Claude 桌面 App 或 Claude Code、公司 Claude 帳號；下載的 `.bat` 可能被 Windows SmartScreen 警告。
+- **橋接會自己停掉**：從 Claude／IDE 的工具程序啟動的背景程式，會在工作階段結束時被一起關閉。要長駐請用 **Windows 工作排程器**（`install-bridge-autostart.ps1`：登入時啟動、隱藏視窗、失敗自動重啟、不需系統管理員），不要靠 Startup 捷徑或手動開視窗。
 - **預覽視窗（內嵌瀏覽器）限制**：`window.open` 會變成同一分頁導覽、無 opener；本機 fetch 可能被擋。測試配對用「模擬 MessageEvent」與替身橋接，真機再測一次。
 - **`/health` 與 `claude auth status` 會 spawn 子程序**：用短時間快取，避免每次輪詢都卡住。
 - **Windows 上 `spawn` 的 `.cmd/.bat`** 需 `shell:true`；一次只處理一個請求（`busy` 旗標，回 429）。
@@ -78,4 +82,4 @@ description: 讓網頁／儀表板的 AI 功能直接使用「使用者自己已
 
 ## 範本檔
 
-見 `templates/`：`claude-bridge.js`、`bridge-client.js`、`start-claude-bridge.bat`、`install-bridge-autostart.bat`、`login-claude.bat`。
+見 `templates/`：`claude-bridge.js`、`bridge-client.js`、`start-claude-bridge.bat`、`install-bridge-autostart.bat`／`.ps1`、`login-claude.bat`。

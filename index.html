@@ -305,11 +305,13 @@ table.heat-t{min-width:560px}
         <b>綁定我的 Claude 帳號</b>（不需要 API key，用公司 Claude 帳號）
         <div class="bind-st" id="bindSt">尚未偵測</div>
         <div class="row"><button type="button" class="btn small primary" id="btnBind">綁定我的 Claude 帳號</button><button type="button" class="btn small" id="btnBindCheck">偵測狀態</button></div>
-        <details><summary>第一次要做什麼？</summary><ol>
-          <li>在這台電腦啟動橋接：雙擊資料夾裡的 <b>start-claude-bridge.bat</b>（想開機自動啟動，再雙擊 <b>install-bridge-autostart.bat</b>）。</li>
-          <li>按「綁定我的 Claude 帳號」。跳出的小視窗會帶你登入公司 Claude（只需一次），再按「允許」。</li>
-          <li>完成。連線碼會自動填好，不用手動貼。</li>
-          <li>限制：橋接只在你這台電腦有效；視窗要保持開著（或設開機自動啟動）。</li></ol></details>
+        <div class="note" id="bindLocalNote" hidden>你正在使用<b>本機版</b>：AI 會自動綁定你自己的 Claude 帳號；第一次需要登入公司帳號（只需一次）。</div>
+        <div id="bindGuide"><div class="note" style="margin:8px 0 4px"><b>要用 AI 的人，請用「本機版」</b>（在公開網址上，瀏覽器通常不讓網頁連到你電腦上的程式；不用 AI 的人不需要做這些，所有分析都能正常使用）：</div>
+          <ol>
+            <li>下載安裝包：<a id="lnkZip" href="https://github.com/hcma204-lab/RDDCC-Leader-View-app/archive/refs/heads/master.zip" target="_blank" rel="noopener">下載 ZIP</a>，解壓縮到固定資料夾（例如 <code>D:\ClaudeBridge</code>）。</li>
+            <li>雙擊裡面的 <b>install-bridge-autostart.bat</b>（只需一次）。需要已安裝 <b>Node.js 18 以上</b>，以及 <b>Claude 桌面 App 或 Claude Code</b>。若 Windows 跳出藍色警告，按「其他資訊」→「仍要執行」。</li>
+            <li>開啟 <a href="http://127.0.0.1:8787/" target="_blank" rel="noopener"><b>http://127.0.0.1:8787/</b></a>（本機版儀表板），到「設定」貼上你自己的 monday token，並按「綁定我的 Claude 帳號」。第一次會請你用公司 Claude 帳號登入。</li>
+            <li>每個人用自己的電腦與自己的 Claude 帳號，互不影響；之後開機會自動啟動，直接開上面的網址即可。</li></ol></div>
       </div>
       <label>類型
         <select id="fProv">
@@ -1293,7 +1295,7 @@ async function llmFetch(url, headers, body){
   return j;
 }
 async function callLLM(system, user){
-  if (!aiReady()) throw new Error('尚未設定 AI。到「設定」選擇類型；不設定也能使用所有本機分析。');
+  if (!aiReady()) throw new Error('尚未設定 AI。要用 AI：請到「設定」→「綁定我的 Claude 帳號」（需先在自己的電腦安裝本機版，步驟在設定頁裡）。不設定也能使用所有本機分析。');
   if (S.aiProvider === 'bridge') {                               // 本機橋接：由你電腦上已登入的 Claude Code 回答
     const base = (S.aiUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '').replace(/\/ask$/, '');
     let r;
@@ -1449,7 +1451,9 @@ function openSettings(){
   $('#fToken').value = S.token; $('#fBoard').value = S.boardId; $('#fProv').value = S.aiProvider; $('#fUrl').value = S.aiUrl; $('#fKey').value = S.aiKey; $('#fModel').value = S.aiModel;
   $('#fDemo').checked = S.demo; $('#fAuto').checked = S.auto; $('#fNotify').checked = S.notify; $('#fRemember').checked = S.remember; $('#testOut').textContent = '';
   syncProv(); dlg.showModal();
-  if (S.aiProvider === 'bridge') bridgeStatus(); else bindSay('', '尚未綁定。按下面的按鈕開始（只有要用 AI 問答／摘要時才需要）。');
+  syncBindUi();
+  if (ST.localBridge || S.aiProvider === 'bridge') bridgeStatus();
+  else bindSay('', '尚未綁定 AI（選填）。不用 AI 也能使用所有分析；要用請照下面的步驟安裝本機版。');
 }
 $('#btnSettings').onclick = openSettings;
 $('#btnCancel').onclick = () => dlg.close();
@@ -1470,13 +1474,24 @@ const PROV_HINT = {
   openai: '需要端點網址；key 視端點而定（公司內部 LLM 若不需要可留空）。',
 };
 /* ── 綁定我的 Claude 帳號（橋接配對）：偵測橋接／登入狀態 → 開配對小視窗 → 收到連線碼自動填好 ── */
-const bridgeBase = () => ($('#fUrl').value.trim() || S.aiUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '').replace(/\/(ask|status|pair|health)$/, '');
+// ST.localBridge＝這個頁面就是橋接程式提供的「本機版」（http://127.0.0.1:8787/）：同源，不受瀏覽器「公開網站連本機」限制，可全自動綁定
+const bridgeBase = () => ST.localBridge ? location.origin : ($('#fUrl').value.trim() || S.aiUrl || 'http://127.0.0.1:8787').replace(/\/+$/, '').replace(/\/(ask|status|pair|health)$/, '');
 const bindSay = (cls, txt) => { const el = $('#bindSt'); el.className = 'bind-st ' + cls; el.textContent = txt; };
+const bindSleep = ms => new Promise(r => setTimeout(r, ms));
+const syncBindUi = () => { $('#bindGuide').hidden = !!ST.localBridge; $('#bindLocalNote').hidden = !ST.localBridge; };
+function applyBinding(tok, url){                                  // 綁定成功：自動填好並存起來
+  $('#fProv').value = 'bridge'; $('#fUrl').value = url; $('#fKey').value = tok;
+  Object.assign(S, { aiProvider:'bridge', aiUrl:url, aiKey:tok });
+  saveSettings(); syncProv();
+}
 async function bridgeStatus(){
   const base = bridgeBase(); bindSay('', '偵測中…');
   let s;
   try { const ctl = new AbortController(), tm = setTimeout(() => ctl.abort(), 3000); const r = await fetch(base + '/status', { signal:ctl.signal }); clearTimeout(tm); s = await r.json(); }
-  catch { bindSay('bad', '✖ 找不到橋接程式（' + base + '）。\n請先在這台電腦雙擊 start-claude-bridge.bat 啟動，再按「偵測狀態」。\n（網頁若是 https 網址，瀏覽器可能詢問是否允許存取本機網路，請選允許。）'); return 'down'; }
+  catch {
+    if (ST.localBridge) bindSay('bad', '✖ 橋接程式沒有回應。請在 Windows 工作排程器確認「ClaudeBridgeDashboard」是否在執行，或重新雙擊 install-bridge-autostart.bat。');
+    else bindSay(S.aiProvider === 'bridge' ? 'bad' : '', '這個網址連不到你電腦上的橋接程式（還沒安裝，或瀏覽器擋住了公開網址連本機）。\n請照下面的步驟安裝並改用本機版：http://127.0.0.1:8787/\n（不需要 AI 的話，可以忽略，所有分析都能正常使用。）');
+    return 'down'; }
   if (!s || !s.bridge) { bindSay('bad', '✖ ' + base + ' 有回應，但不是 Claude 橋接程式。請確認網址。'); return 'down'; }
   if (!s.claude) { bindSay('bad', '✖ 橋接已啟動，但這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。'); return 'noclaude'; }
   if (s.loggedIn !== true) { bindSay('', '橋接已啟動，尚未登入 Claude。按「綁定我的 Claude 帳號」會引導你登入（只需一次）。'); return 'nologin'; }
@@ -1488,21 +1503,43 @@ async function bridgeStatus(){
   bindSay('', '✔ 橋接就緒、Claude 已登入。按「綁定我的 Claude 帳號」完成最後一步。'); return 'ready';
 }
 $('#btnBindCheck').onclick = bridgeStatus;
+async function bindLocal(allowLogin){                              // 本機版：全自動，不需要彈出視窗
+  const base = location.origin;
+  let s; try { s = await (await fetch(base + '/status')).json(); } catch { return bridgeStatus(); }
+  if (!s.claude) { bindSay('bad', '✖ 這台電腦找不到 Claude。請先安裝 Claude 桌面 App 或 Claude Code。'); return false; }
+  if (s.loggedIn !== true) {
+    if (!allowLogin) { bindSay('', '尚未登入 Claude。按「綁定我的 Claude 帳號」，會自動開啟瀏覽器讓你用公司帳號登入（只需一次）。'); return false; }
+    bindSay('', '已開啟瀏覽器，請用公司 Claude 帳號完成登入…完成後這裡會自動更新。\n（若瀏覽器要求貼上授權碼，請改在終端機執行 claude auth login。）');
+    try { await fetch(base + '/pair/login', { method:'POST' }); } catch {}
+    for (let i = 0; i < 150 && s.loggedIn !== true; i++) { await bindSleep(2000); try { s = await (await fetch(base + '/status')).json(); } catch {} }
+    if (s.loggedIn !== true) { bindSay('bad', '等待登入逾時。請再按一次「綁定我的 Claude 帳號」。'); return false; }
+  }
+  let r, j; try { r = await fetch(base + '/pair/token', { method:'POST' }); j = await r.json(); } catch { r = null; }
+  if (!r || !r.ok || !j.token) { bindSay('bad', '✖ 綁定失敗：' + ((j && j.error) || '橋接程式沒有回應')); return false; }
+  applyBinding(j.token, base); await bridgeStatus(); render(); return true;
+}
 $('#btnBind').onclick = async () => {
-  if (location.protocol === 'file:') { bindSay('bad', '你是用本機檔案（file://）開啟儀表板，瀏覽器不允許自動綁定。\n請改用公開網址開啟；或把下面「類型」選 Claude Code，手動貼上橋接視窗顯示的連線碼。'); return; }
-  const st = await bridgeStatus(); if (st === 'down' || st === 'noclaude') return;
+  if (ST.localBridge) return bindLocal(true);
+  if (location.protocol === 'file:') { bindSay('', '用本機檔案（file://）開啟時，瀏覽器不允許自動綁定。請改用上面步驟的本機版網址 http://127.0.0.1:8787/。'); return; }
+  const st = await bridgeStatus(); if (st === 'down' || st === 'noclaude') return;     // 連不到時 bridgeStatus 已顯示安裝步驟
   const w = window.open(bridgeBase() + '/pair?origin=' + encodeURIComponent(location.origin), 'cfdash-pair', 'width=520,height=700');
   if (!w) bindSay('bad', '瀏覽器擋住了彈出視窗。請允許這個網站的彈出視窗後，再按一次。');
 };
-window.addEventListener('message', async e => {                  // 只接受「橋接位址」傳來的配對訊息
+window.addEventListener('message', async e => {                  // 只接受「橋接位址」傳來的配對訊息（公開網址＋已允許本機網路時才會用到）
   const d = e.data; if (!d || d.type !== 'cfdash-bridge-pair' || typeof d.token !== 'string') return;
   let expected; try { expected = new URL(bridgeBase()).origin; } catch { return; }
   if (e.origin !== expected) return;
-  const tok = cleanKey(d.token), url = bridgeBase();
-  $('#fProv').value = 'bridge'; $('#fUrl').value = url; $('#fKey').value = tok;
-  Object.assign(S, { aiProvider:'bridge', aiUrl:url, aiKey:tok });
-  saveSettings(); syncProv(); await bridgeStatus(); render();
+  applyBinding(cleanKey(d.token), bridgeBase()); await bridgeStatus(); render();
 });
+(async function initLocalBridge(){                               // 啟動時自動偵測「本機版」；已登入 Claude 但還沒綁定／連線碼失效 → 靜默自動綁定
+  if (!/^https?:$/.test(location.protocol) || !/^(127\.0\.0\.1|localhost)$/.test(location.hostname)) return;
+  let s; try { s = await (await fetch('/status')).json(); } catch { return; }
+  if (!s || s.bridge !== true) return;
+  ST.localBridge = true; syncBindUi();
+  let ok = false;
+  if (S.aiProvider === 'bridge' && S.aiKey) { try { ok = (await fetch('/health', { headers:{ Authorization:'Bearer ' + S.aiKey } })).ok; } catch {} }
+  if (!ok && s.loggedIn === true) { const r = await bindLocal(false); if (r) $('#btnAI').hidden = false; }
+})();
 const syncProv = () => { const v = $('#fProv').value; $('#provHint').textContent = PROV_HINT[v] || ''; if (v === 'bridge' && !$('#fUrl').value.trim()) $('#fUrl').value = 'http://127.0.0.1:8787'; };
 $('#fProv').addEventListener('change', syncProv);
 $('#frm').addEventListener('submit', async () => {
