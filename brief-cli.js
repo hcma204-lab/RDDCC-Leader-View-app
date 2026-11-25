@@ -40,7 +40,7 @@ function loadEngine() {
   const cut = script.indexOf('7. 畫面'), head = script.slice(0, script.lastIndexOf('/*', cut));
   const ctx = { location: { hash: '' }, console, Intl, Date, JSON, Math, Object, Array, String, Number, RegExp, Set, Map, Promise, fetch, URL, setTimeout, clearTimeout };
   vm.createContext(ctx);
-  vm.runInContext(head + `\nCONFIG.activeStatuses = Object.values(CONFIG.statusLabels);\nthis.E = { CONFIG, S, normalize, analyze, weeklyModel, gmModel, ownerHealth, flowModel, fetchActive, fetchDone, todayStr, shortName, dueText, mmdd, itemRisk, diffDays, addDays };`, ctx);
+  vm.runInContext(head + `\nCONFIG.activeStatuses = Object.values(CONFIG.statusLabels);\nthis.E = { CONFIG, S, normalize, analyze, reasonCount, weeklyModel, gmModel, ownerHealth, flowModel, fetchActive, fetchDone, todayStr, shortName, dueText, mmdd, itemRisk, diffDays, addDays };`, ctx);
   return ctx.E;
 }
 
@@ -124,9 +124,11 @@ async function analyze() {
       decisions: A.decisions.slice(0, 8).map(d => d.kind === 'review'
         ? { type: 'review_backlog', severity: d.sev, headline: d.headline, byOwner: Object.fromEntries(Object.entries(d.dist).map(([o, n]) => [E.shortName(o), n])) }
         : { type: 'item', severity: d.sev, headline: d.headline, ...sm(d.item) }),
-      reviewOldest: A.review.slice(0, 5).map(i => ({ ...sm(i), waitingDaysEstimate: i.reviewWait })),
+      reviewOldest: A.review.slice(0, 5).map(i => ({ ...sm(i), waitingDaysEstimate: i.reviewWait, holdReason: i.reviewReason || '未標示' })),
+      reviewByHoldReason: Object.fromEntries(E.reasonCount(A.review)),                    // 審核等待原因分佈（monday「✏️審核等待原因」欄）
+      queuedOver5Days: A.review.filter(i => i.reviewReason === '排隊待審' && i.reviewWait > 5).map(i => ({ ...sm(i), waitingDaysEstimate: i.reviewWait })),
       overdueBands: { mild: A.bands.mild.length, mid: A.bands.mid.length, severe: A.bands.severe.length },
-      upcoming: A.upcoming.map(sm), silent: A.silent.slice(0, 8).map(i => ({ ...sm(i), level: i.silent })),
+      upcoming: A.upcoming.map(sm), likelyLate: A.forecast.slice(0, 8).map(f => ({ ...sm(f.item), reasons: f.why })), silent: A.silent.slice(0, 8).map(i => ({ ...sm(i), level: i.silent })),
       health: E.ownerHealth(A).map(h => ({ owner: E.shortName(h.owner), level: h.level, reasons: h.why, counts: h.counts, allWaitingForManager: !!h.waiting })),
       flow: (f => ({ recent3Weeks: f.recent3, weekly: f.rows.map(r => ({ weekStart: r.start, created: r.created, done: r.done })) }))(E.flowModel(items, done, today, 10)),
       note: '到期天數以預計時程結束日計算；審核等待天數為估計值（看板沒有送審時間）；看板無法判斷項目是否已線下審過。' });

@@ -6,78 +6,189 @@
 <title>研發文管課｜主管儀表板</title>
 <style>
 :root{
+  /* 配色：高對比資訊版（以深空藍＋青色為基礎）。不使用光暈，字與框線對比加強，投影機上也清楚。
+     規則：灰藍是底；紅／橘黃／綠只表示狀態；青色（accent）只給「可以點」的東西；圖表用靛藍 */
   color-scheme:light;
-  --page:#f9f9f7; --surface:#fcfcfb; --ink:#0b0b0b; --ink2:#52514e; --muted:#898781;
-  --grid:#e1e0d9; --axis:#c3c2b7; --ring:rgba(11,11,11,.10);
-  --s1:#2a78d6; --s2:#eb6834; --s3:#898781; --s4:#1baf7a;   /* 圖表：藍／橘／灰／綠 */
-  --ok-bg:#e6f4e6; --ok-line:#0ca30c;
-  --crit:#d03b3b; --serious:#ec835a; --warn:#fab219;   /* 狀態色（固定，不當作系列色） */
-  --crit-bg:#fbe9e9; --serious-bg:#fdeee7; --warn-bg:#fff4d6;
-  --ok:#006300; --accent:#2a78d6; --accent-ink:#ffffff;
+  --page:#e8edf5; --panel:#ffffff; --surface:#ffffff; --ink:#050c1a; --ink2:#283449; --muted:#45526a;
+  --grid:#e3e8f0; --axis:#b9c4d6; --ring:rgba(10,22,40,.20);
+  --shadow:0 1px 2px rgba(10,22,40,.06);
+  --s1:#4b5bd0; --s2:#e09a00; --s3:#aab5c8; --s4:#0f9f7a;   /* 圖表：靛藍（一般）／琥珀（等審）／淺灰（暫緩）／綠（完成） */
+  --ok-bg:#e1f6ef; --ok-line:#0f9f7a;
+  --crit:#d6304f; --serious:#e5600f; --warn:#e0a100;   /* 狀態色（固定，不當作系列色） */
+  --crit-bg:#fde7ec; --serious-bg:#fff0e5; --warn-bg:#fff5d4;
+  --crit-ink:#a3122f; --serious-ink:#a33b06; --warn-ink:#734d00; --ok-ink:#03704f;   /* 狀態色文字（對底色 > 5:1） */
+  --ok:#03704f; --accent:#035a8a; --accent-ink:#ffffff; --accent-weak:#dcefff; --accent-text:#03507a; --accent2:#03507a;
+  --glow:transparent;
+  --fx:radial-gradient(900px 420px at 0% -5%,rgba(3,90,138,.06),transparent 60%),linear-gradient(180deg,#f5f8fc 0px,#e8edf5 480px);
+  --grid-fx:linear-gradient(transparent,transparent),linear-gradient(transparent,transparent);
+  --card-top:#ffffff; --card-bot:#f7f9fc; --tile-top:#f8fafd; --tile-bot:#eef2f8; --btn-top:#0b75b0;   /* 層次：卡片上亮下暗、內層小卡再深一階 */
+  --elev:0 1px 2px rgba(10,22,40,.06),0 10px 24px -16px rgba(10,22,40,.22);
 }
 @media (prefers-color-scheme:dark){
   :root:where(:not([data-theme="light"])){
     color-scheme:dark;
-    --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
-    --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
-    --s1:#3987e5; --s2:#d95926; --s3:#898781; --s4:#199e70; --ok-bg:#16301a; --ok-line:#0ca30c;
-    --crit-bg:#3a1c1c; --serious-bg:#3a2519; --warn-bg:#3a2f12; --ok:#0ca30c; --accent:#3987e5;
+    --page:#02050c; --panel:#0a1120; --surface:#0a1120; --ink:#ffffff; --ink2:#cbd7ea; --muted:#a9b8d0;
+    --grid:#17233b; --axis:#34476c; --ring:rgba(140,190,255,.26);
+    --shadow:0 1px 0 rgba(0,0,0,.35);
+    --s1:#8f9bff; --s2:#fbbf24; --s3:#4b5a78; --s4:#34d399; --ok-bg:rgba(52,211,153,.14); --ok-line:#34d399;
+    --crit:#ff5c7a; --serious:#ff8a4c; --warn:#fbbf24;
+    --crit-bg:rgba(255,92,122,.16); --serious-bg:rgba(255,138,76,.16); --warn-bg:rgba(251,191,36,.14);
+    --crit-ink:#ffa3b5; --serious-ink:#ffb88f; --warn-ink:#fcd34d; --ok-ink:#6ee7b7;
+    --ok:#34d399; --accent:#38e1ff; --accent-ink:#02121a; --accent-weak:rgba(56,225,255,.14); --accent-text:#7eeaff; --accent2:#7eeaff;
+    --glow:transparent;
+    --fx:radial-gradient(900px 420px at 0% -5%,rgba(56,225,255,.06),transparent 60%),linear-gradient(180deg,#081329 0px,#02050c 480px);
+    --card-top:#0f1930; --card-bot:#0a1120; --tile-top:#0b1426; --tile-bot:#070e1b; --btn-top:#6ae9ff;
+    --elev:inset 0 1px 0 rgba(255,255,255,.05),0 10px 28px -18px rgba(0,0,0,.85);
+    --grid-fx:linear-gradient(rgba(140,190,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(140,190,255,.035) 1px,transparent 1px);
   }
 }
 :root[data-theme="dark"]{
   color-scheme:dark;
-  --page:#0d0d0d; --surface:#1a1a19; --ink:#f0efec; --ink2:#c3c2b7; --muted:#898781;
-  --grid:#2c2c2a; --axis:#383835; --ring:rgba(255,255,255,.10);
-  --s1:#3987e5; --s2:#d95926; --s3:#898781; --s4:#199e70; --ok-bg:#16301a; --ok-line:#0ca30c;
-  --crit-bg:#3a1c1c; --serious-bg:#3a2519; --warn-bg:#3a2f12; --ok:#0ca30c; --accent:#3987e5;
+  --page:#02050c; --panel:#0a1120; --surface:#0a1120; --ink:#ffffff; --ink2:#cbd7ea; --muted:#a9b8d0;
+  --grid:#17233b; --axis:#34476c; --ring:rgba(140,190,255,.26);
+  --shadow:0 1px 0 rgba(0,0,0,.35);
+  --s1:#8f9bff; --s2:#fbbf24; --s3:#4b5a78; --s4:#34d399; --ok-bg:rgba(52,211,153,.14); --ok-line:#34d399;
+  --crit:#ff5c7a; --serious:#ff8a4c; --warn:#fbbf24;
+  --crit-bg:rgba(255,92,122,.16); --serious-bg:rgba(255,138,76,.16); --warn-bg:rgba(251,191,36,.14);
+  --crit-ink:#ffa3b5; --serious-ink:#ffb88f; --warn-ink:#fcd34d; --ok-ink:#6ee7b7;
+  --ok:#34d399; --accent:#38e1ff; --accent-ink:#02121a; --accent-weak:rgba(56,225,255,.14); --accent-text:#7eeaff; --accent2:#7eeaff;
+  --glow:transparent;
+  --fx:radial-gradient(900px 420px at 0% -5%,rgba(56,225,255,.06),transparent 60%),linear-gradient(180deg,#081329 0px,#02050c 480px);
+    --card-top:#0f1930; --card-bot:#0a1120; --tile-top:#0b1426; --tile-bot:#070e1b; --btn-top:#6ae9ff;
+    --elev:inset 0 1px 0 rgba(255,255,255,.05),0 10px 28px -18px rgba(0,0,0,.85);
+  --grid-fx:linear-gradient(rgba(140,190,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(140,190,255,.035) 1px,transparent 1px);
 }
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
-body{margin:0;background:var(--page);color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif}
+body{margin:0;color:var(--ink);font:15px/1.55 system-ui,-apple-system,"Segoe UI","Noto Sans TC","Microsoft JhengHei",sans-serif;
+  background-color:var(--page);background-image:var(--fx),var(--grid-fx);background-size:auto,auto,32px 32px,32px 32px;background-attachment:fixed}
+body::before{content:"";position:fixed;left:0;right:0;top:0;height:2px;background:linear-gradient(90deg,transparent,var(--accent),transparent);opacity:.8;z-index:60;pointer-events:none}
+/* 科技感：數字用 Bahnschrift（Windows 內建的工業字體）、卡片半透明毛玻璃、深色模式下的數字微光 */
+.kpi .n,.mt-v,.big,.pill b,.dlt,.val,td.num,.hn{font-family:Bahnschrift,"DIN Alternate","Segoe UI Variable Display","Segoe UI",system-ui,sans-serif;letter-spacing:.01em}
+.kpi .n,.big,.mt-v{text-shadow:0 0 22px var(--glow)}
+.card,.kpi,.hs-t,.mt{backdrop-filter:saturate(140%) blur(10px);-webkit-backdrop-filter:saturate(140%) blur(10px)}
+.card,.kpi{box-shadow:var(--shadow)}
+button.kpi:hover,button.hs-t:hover{border-color:var(--accent)}
+.linkb{background:none;border:0;padding:0 2px;color:var(--accent-text);font-size:13px;cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+.linkb:hover{color:var(--ink)}
+.hint.calc{border-color:color-mix(in srgb,var(--accent) 55%,var(--axis));color:var(--accent-text);background:transparent;padding:0;line-height:1;vertical-align:2px}
+.hint.calc:hover,.hint.calc:focus-visible{background:var(--accent-weak);color:var(--accent-text)}
+.foot-links{margin-top:28px;text-align:center}
+.calc-dlg h3{margin-bottom:6px}
+.calc-sel{border:1px solid color-mix(in srgb,var(--accent) 45%,var(--ring));background:var(--accent-weak);border-radius:12px;padding:12px 14px;margin:6px 0 4px}
+.calc-sel h4{color:var(--accent-text);font-size:16px}
+.calc-g{font-size:13px;color:var(--muted);letter-spacing:.06em;margin:10px 0 4px}
+.calc-d{border-top:1px solid var(--grid);padding:8px 0} .calc-d>summary{cursor:pointer;font-weight:600;font-size:14.5px}
+.calc-dlg ul{margin:6px 0 0;padding-left:20px;display:grid;gap:6px;font-size:14px;color:var(--ink2);line-height:1.65}
 a{color:var(--accent);text-decoration:none} a:hover{text-decoration:underline}
 button{font:inherit;color:inherit;cursor:pointer}
 .wrap{max-width:1280px;margin:0 auto;padding:0 16px 64px}
 /* header */
 header.top{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:20px 0 14px}
-header.top h1{font-size:20px;margin:0;font-weight:650}
+header.top h1{font-size:21px;margin:0;font-weight:700;letter-spacing:.02em;background:linear-gradient(90deg,var(--ink) 0%,var(--accent-text) 60%,var(--accent2) 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 header.top .sub{color:var(--ink2);font-size:13px}
 .actions{display:flex;flex-wrap:wrap;gap:8px}
 .btn{border:1px solid var(--ring);background:var(--surface);border-radius:8px;padding:7px 12px;font-size:14px;line-height:1.2}
 .btn:hover{background:var(--grid)}
-.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
-.btn.primary:hover{filter:brightness(1.08);background:var(--accent)}
-.btn.small{padding:4px 9px;font-size:12.5px;border-radius:6px}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.ghost{background:transparent;border-color:transparent;color:var(--ink2)}
+.btn.ghost:hover{background:var(--grid);color:var(--ink)}
+.btn.small{padding:4px 9px;font-size:13px;border-radius:6px}
 .btn[disabled]{opacity:.5;cursor:not-allowed}
-.banner{border:1px solid var(--ring);border-radius:10px;padding:10px 14px;margin:0 0 14px;background:var(--surface);font-size:14px}
-.banner.demo{background:var(--warn-bg)} .banner.err{background:var(--crit-bg)}
-/* headline */
-.headline{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:14px 16px;margin-bottom:14px}
-.headline .k{font-size:12px;color:var(--muted);letter-spacing:.04em}
-.headline .t{font-size:17px;font-weight:600;margin-top:2px}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.banner{border:1px solid var(--ring);border-radius:10px;padding:8px 14px;margin:0 0 14px;background:var(--surface);font-size:13.5px;color:var(--ink2)}
+.banner.demo{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent} .banner.err{background:var(--crit-bg);color:var(--crit-ink);border-color:transparent}
+/* 首屏：一句結論 + 3 個大數字 */
+.hero{margin-bottom:18px}
+.hero .k{font-size:13px;color:var(--muted);font-weight:600}
+.hero .t{font-size:22px;font-weight:700;line-height:1.35;margin:2px 0 14px}
 /* KPI */
-.kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:14px}
-.kpi{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:12px 14px;text-align:left;display:block;width:100%}
+.kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:10px}
+.kpis.five{grid-template-columns:repeat(5,1fr)}
+.kpi{background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:14px 16px;text-align:left;display:block;width:100%;position:relative}
 .kpi:hover{border-color:var(--axis)}
-.kpi .n{font-size:30px;font-weight:650;line-height:1.1}
-.kpi .l{color:var(--ink2);font-size:13px;margin-top:2px}
-.kpi .d{color:var(--muted);font-size:12px;margin-top:4px}
+.kpi .n{font-size:40px;font-weight:700;line-height:1.05;font-variant-numeric:tabular-nums}
+.kpis.five .kpi .n{font-size:30px}
+.kpi .l{color:var(--ink);font-size:14px;font-weight:600;margin-top:4px}
+.kpi .d{color:var(--muted);font-size:13px;margin-top:2px}
+.kpi.tone-crit .n{color:var(--crit)} .kpi.tone-warn .n{color:var(--warn-ink)} .kpi.tone-ok .n{color:var(--ok)}
+.kpi.tone-crit{border-top:3px solid var(--crit)} .kpi.tone-warn{border-top:3px solid var(--warn)} .kpi.tone-ok{border-top:3px solid var(--ok-line)} .kpi.tone-n{border-top:3px solid var(--axis)}
+.dlt{font-size:13px;font-weight:700;margin-left:8px;vertical-align:middle;font-variant-numeric:tabular-nums}
+.dlt.up{color:var(--crit-ink)} .dlt.down{color:var(--ok-ink)} .dlt.flat{color:var(--muted)}
+/* 總經理頁：座右銘四象限＋時效記分卡 */
+.gm-lead{font-size:21px;font-weight:700;line-height:1.5;margin:4px 0 8px}
+.gm-sub{font-size:13.5px;color:var(--ink2);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.gm-quad{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));grid-auto-rows:1fr;gap:16px;margin:16px 0}   /* 2×2：左上數據管理、右上持續改善、左下創新思考、右下享受生活，每格等寬等高 */
+.gm-quad>.q{display:flex;flex-direction:column;min-width:0}
+.q-body{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:10px}   /* 格子比內容高時，空間平均分到各區塊之間，不會集中在底部 */
+.q-body>.q-n{margin:0}
+.q-in .mts.two{flex:1;grid-template-columns:repeat(2,minmax(0,1fr))} .q-in .mt{display:flex;flex-direction:column;justify-content:center}
+.q-lv .bars{flex:1;align-content:space-evenly}
+.q-dm .mts.four{grid-template-columns:repeat(2,minmax(0,1fr))}   /* 數據管理與創新思考都用 2×2 小卡，左欄上下一致、四格內容份量相近 */
+.q-h{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px} .q-h b{font-size:17px} .q-h span{color:var(--muted);font-size:13px}
+.q-n{font-size:13.5px;color:var(--ink2);margin:10px 0 0}
+.mts{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} .mts.four{grid-template-columns:repeat(4,1fr)}
+.mt{background:var(--page);border:1px solid var(--grid);border-radius:12px;padding:10px 12px;min-width:0}
+.mt-l{font-size:12.5px;color:var(--ink2);font-weight:600}
+.mt-v{font-size:30px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums} .mt-v small{font-size:14px;font-weight:600;color:var(--ink2)}
+.mt-g{margin-top:4px;min-height:22px} .mt-n{font-size:12px;color:var(--muted);margin-top:2px}
+.dlt.good{color:var(--ok-ink)} .dlt.bad{color:var(--crit-ink)}
+.big-row{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap;margin-bottom:8px} .unit{font-size:15px;color:var(--ink2);font-weight:600}
+.impv{border-top:1px solid var(--grid);padding:10px 0}
+.impv-h{display:flex;align-items:center;gap:8px;flex-wrap:wrap} .impv-h b{font-size:14.5px;flex:1;min-width:140px}
+.impv-bar{height:8px;background:var(--grid);border-radius:4px;margin-top:6px;overflow:hidden} .impv-bar i{display:block;height:100%;background:var(--s4);border-radius:4px}
+table.mini{min-width:0;font-size:13.5px;margin-bottom:2px} table.mini td,table.mini th{padding:4px 6px} table.mini td small{font-size:11px;color:var(--muted);margin-left:2px} table.mini th.num,table.mini td.num{text-align:right}
+.q-sub{font-size:14px;font-weight:700;margin:0 0 6px;display:flex;align-items:center;gap:4px;flex-wrap:wrap} .q-sub small{font-weight:400;color:var(--muted);font-size:12.5px;margin-left:4px}
+.impv-row{display:grid;grid-template-columns:1fr auto auto;gap:8px;align-items:center;padding:6px 0;border-top:1px solid var(--grid);font-size:14px} .impv-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap} .impv-row .m2{color:var(--muted);font-size:12.5px;white-space:nowrap}
+.chip.rr{background:var(--accent-weak);color:var(--accent-text);border-color:transparent}
+.rr-dist{display:flex;flex-wrap:wrap;gap:6px 10px;align-items:center;margin-top:8px;font-size:13.5px;color:var(--ink2)}
+.rr-i{display:inline-flex;gap:4px;align-items:center} .rr-i b{font-family:Bahnschrift,"Segoe UI",system-ui,sans-serif;color:var(--ink)}
+/* 總經理風險清單：一列一項、欄位排開，填滿寬度（窄螢幕自動改成兩行） */
+.rk{display:grid;gap:0}
+.rk-r{display:grid;grid-template-columns:84px minmax(170px,1.3fr) minmax(170px,1.5fr) 72px minmax(150px,1.1fr) 56px;gap:12px;align-items:center;padding:9px 4px;border-top:1px solid var(--grid);font-size:14px}
+.rk-h{border-top:0;padding-top:0;font-size:12.5px;color:var(--muted);font-weight:600}
+.rk-r:not(.rk-h):hover{background:color-mix(in srgb,var(--grid) 45%,transparent)}
+.rk-n a{font-weight:600} .rk-w{color:var(--ink2)} .rk-o{color:var(--ink2);white-space:nowrap} .rk-a{color:var(--ink2);font-size:13.5px} .rk-d{color:var(--muted);font-family:Bahnschrift,"Segoe UI",system-ui,sans-serif;text-align:right}
+@media (max-width:820px){.rk-h{display:none}.rk-r{grid-template-columns:auto 1fr;gap:2px 10px;align-items:start}.rk-r>span:first-child{grid-row:span 5}.rk-o::before{content:"負責人："}.rk-a::before{content:"建議："}.rk-d{text-align:left}.rk-d::before{content:"到期 "}}
+.mt-n b{color:var(--ink);font-family:Bahnschrift,"Segoe UI",system-ui,sans-serif}
+.dl-bar{display:flex;height:14px;border-radius:7px;overflow:hidden;background:var(--grid);gap:2px}
+.dl-bar i{display:block;height:100%;background-image:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0) 75%)}
+.dl-row{display:grid;grid-template-columns:150px minmax(0,1fr);gap:8px;align-items:center;font-size:13px;color:var(--ink2);margin-top:5px}
+.dl-k{display:flex;align-items:center;gap:6px;white-space:nowrap} .dl-k i{display:inline-block;width:10px;height:10px;border-radius:2px;flex:none} .dl-k b{color:var(--ink);margin-left:2px;font-family:Bahnschrift,"Segoe UI",system-ui,sans-serif}
+.dl-c{display:flex;flex-wrap:wrap;gap:4px 10px;align-items:center} .dl-note{color:var(--muted)}
+.dl-wrap .dl-bar{margin-top:2px}
+table.mini tr.chg td{border-top:1px solid var(--axis);font-weight:600;color:var(--ink2)}
+.gm-call{margin-top:12px;border-left:4px solid var(--warn);background:var(--warn-bg);color:var(--warn-ink);border-radius:8px;padding:10px 14px;font-size:14.5px}
+@media (max-width:960px){.gm-quad{grid-template-columns:1fr;grid-auto-rows:auto}}
+@media (max-width:520px){.mts,.mts.four{grid-template-columns:repeat(2,1fr)} .gm-lead{font-size:18px}}
+.big{font-size:46px;font-weight:800;color:var(--accent-text);font-variant-numeric:tabular-nums;margin:0 4px}
+.imp-form{display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center;margin:0 0 6px;font-size:14px;color:var(--ink2)}
+.imp-form input{width:88px} .imp-form input[type=date]{width:150px}
+.kpi2{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+.pill{display:inline-flex;gap:6px;align-items:baseline;border:1px solid var(--ring);background:var(--surface);border-radius:999px;padding:5px 13px;font-size:13.5px;color:var(--ink2)}
+.pill b{color:var(--ink);font-size:15px;font-variant-numeric:tabular-nums}
+.pill:hover{border-color:var(--axis);background:var(--grid)}
 /* layout */
-.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:14px;margin-bottom:14px}
-.card{background:var(--surface);border:1px solid var(--ring);border-radius:12px;padding:14px 16px}
-.card h2{font-size:15px;margin:0 0 10px;font-weight:650;display:flex;justify-content:space-between;align-items:baseline;gap:2px 10px;flex-wrap:wrap}
-.card h2 small{font-weight:400;color:var(--muted);font-size:12px}
+.grid2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;margin-bottom:16px}
+.card{background:var(--surface);border:1px solid var(--ring);border-radius:14px;padding:16px 18px}
+.card h2{font-size:16px;margin:0 0 12px;font-weight:700;display:flex;justify-content:flex-start;align-items:baseline;gap:4px 10px;flex-wrap:wrap}
+.card h2 small{font-weight:400;color:var(--muted);font-size:13px}
+.hint{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;border:1px solid var(--axis);color:var(--muted);font-size:11px;font-weight:700;cursor:help;vertical-align:1px;margin-left:2px}
+.hint:hover,.hint:focus-visible{background:var(--grid);color:var(--ink)}
+.more{margin-top:6px}
 /* decisions */
-.dec{border-top:1px solid var(--grid);padding:10px 0;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:start}
+.dec{border-top:1px solid var(--grid);padding:12px 0;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:start}
 .dec:first-of-type{border-top:0}
-.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-size:12px;font-weight:600;white-space:nowrap;border:1px solid transparent}
-.chip.crit{background:var(--crit-bg);color:var(--crit);border-color:var(--crit)}
-.chip.serious{background:var(--serious-bg);color:#b8481b;border-color:var(--serious)}
-.chip.warn{background:var(--warn-bg);color:#8a6100;border-color:var(--warn)}
+.chip{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:1px 9px;font-size:12.5px;font-weight:600;white-space:nowrap;border:1px solid transparent}
+.chip.crit{background:var(--crit-bg);color:var(--crit-ink);border-color:transparent}
+.chip.serious{background:var(--serious-bg);color:var(--serious-ink);border-color:transparent}
+.chip.warn{background:var(--warn-bg);color:var(--warn-ink);border-color:transparent}
 .chip.neutral{background:var(--grid);color:var(--ink2)}
-@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) .chip.serious{color:#f0a283} :root:where(:not([data-theme="light"])) .chip.warn{color:#f6c453}}
-:root[data-theme="dark"] .chip.serious{color:#f0a283} :root[data-theme="dark"] .chip.warn{color:#f6c453}
-.dec .h{font-weight:600}
-.dec .m{color:var(--ink2);font-size:13px;margin-top:1px}
+.dec .h{font-weight:600;font-size:15px}
+.dec .m{color:var(--ink2);font-size:13.5px;margin-top:2px}
+.dec .m2{color:var(--muted);font-size:13px;margin-top:1px}
+.dec details{margin-top:4px;font-size:13px;color:var(--ink2)} .dec details summary{cursor:pointer;color:var(--muted)}
 .empty{color:var(--muted);padding:6px 0}
 /* bars */
 .bars{display:grid;gap:8px}
@@ -91,13 +202,14 @@ header.top .sub{color:var(--ink2);font-size:13px}
 .val{font-variant-numeric:tabular-nums;text-align:right;color:var(--ink2)}
 .legend{display:flex;flex-wrap:wrap;gap:12px;font-size:12px;color:var(--ink2);margin:8px 0 0}
 .legend i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
-.flag{font-size:11.5px;color:var(--crit);margin-left:4px}
-/* tabs */
-.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px;align-items:center}
-.tab{border:1px solid var(--ring);background:transparent;border-radius:999px;padding:5px 13px;font-size:13.5px}
-.tab[aria-selected="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.flag{font-size:12px;color:var(--crit-ink);margin-left:4px}
+/* tabs：資料分頁＝膠囊；頁面主導覽（.views）＝底線，兩層樣式不同 */
+.tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px;align-items:center}
+.tab{border:1px solid var(--ring);background:transparent;border-radius:999px;padding:5px 13px;font-size:14px;color:var(--ink2)}
+.tab:hover{background:var(--grid)}
+.tab[aria-selected="true"]{background:var(--accent-weak);color:var(--accent-text);border-color:var(--accent);font-weight:600}
 .tabs .sp{flex:1}
-input[type=search],input[type=text],input[type=password],input[type=url],select,textarea{font:inherit;border:1px solid var(--ring);background:var(--page);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
+input[type=search],input[type=text],input[type=password],input[type=url],input[type=number],input[type=date],select,textarea{font:inherit;border:1px solid var(--ring);background:var(--page);color:var(--ink);border-radius:8px;padding:6px 10px;max-width:100%}
 textarea{width:100%;min-height:90px;resize:vertical}
 .tw{overflow-x:auto}
 table{border-collapse:collapse;width:100%;min-width:620px;font-size:13.5px}
@@ -105,28 +217,36 @@ td:first-child{min-width:170px}
 th{font-weight:600;text-align:left;color:var(--ink2);font-size:12.5px;border-bottom:1px solid var(--axis);padding:6px 8px;white-space:nowrap}
 td{padding:7px 8px;border-bottom:1px solid var(--grid);vertical-align:top}
 td.num{font-variant-numeric:tabular-nums;white-space:nowrap}
+td.heat{font-weight:600;color:var(--ink)}
+td.od{color:var(--crit-ink);font-weight:600}
+.thb{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;white-space:nowrap} .thb:hover{color:var(--ink)} .thb span{color:var(--accent-text)}
 tr:hover td{background:color-mix(in srgb,var(--grid) 40%,transparent)}
 /* drawer */
-.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--surface);border-left:1px solid var(--ring);box-shadow:-8px 0 24px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .2s;z-index:30;display:flex;flex-direction:column}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(480px,100vw);background:var(--panel);border-left:1px solid var(--ring);box-shadow:-8px 0 24px rgba(0,0,0,.12);transform:translateX(105%);transition:transform .2s;z-index:30;display:flex;flex-direction:column}
 .drawer.open{transform:none}
 .drawer header{padding:12px 16px;border-bottom:1px solid var(--grid);display:flex;justify-content:space-between;align-items:center}
 .drawer header b{font-size:16px}
 .dbody{padding:12px 16px;overflow:auto;flex:1}
-.note{font-size:12px;color:var(--muted);margin:6px 0}
+.note{font-size:13px;color:var(--muted);margin:6px 0}
 .out{border:1px solid var(--grid);border-radius:10px;padding:10px 12px;margin-top:10px;background:var(--page);font-size:14px;overflow-wrap:anywhere}
 .out ul{margin:4px 0;padding-left:20px}
 .chk{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;font-size:13.5px;margin:8px 0}
 .row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}
 .qa{margin-top:10px} .qa .q{font-weight:600}
 /* dialog */
-dialog{border:1px solid var(--ring);border-radius:14px;background:var(--surface);color:var(--ink);padding:0;width:min(560px,94vw)}
+dialog{border:1px solid var(--ring);border-radius:14px;background:var(--panel);box-shadow:0 30px 80px -20px rgba(0,0,0,.45);color:var(--ink);padding:0;width:min(560px,94vw)}
 dialog::backdrop{background:rgba(0,0,0,.4)}
 dialog form{padding:18px 20px;display:grid;gap:10px}
 dialog label{display:grid;gap:3px;font-size:13px;color:var(--ink2)}
 dialog h3{margin:0 0 2px;font-size:17px}
 dialog fieldset{border:1px solid var(--grid);border-radius:10px;padding:10px 12px;display:grid;gap:8px}
 dialog legend{font-size:13px;color:var(--muted);padding:0 6px}
-.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--surface);font-size:12px;border-radius:6px;padding:4px 8px;max-width:260px;display:none}
+dialog.gov{width:min(680px,94vw);max-height:90vh;overflow:auto}
+.gov h3{font-size:18px} .gov h4{margin:0 0 4px;font-size:14.5px}
+.gov section{border-top:1px solid var(--grid);padding-top:10px} .gov ul{margin:4px 0 0;padding-left:20px;display:grid;gap:4px;font-size:14px;color:var(--ink2)}
+.gov-pr{display:grid;grid-template-columns:repeat(3,1fr);gap:10px} .gov-pr div{background:var(--accent-weak);border-radius:10px;padding:10px 12px;display:grid;gap:2px} .gov-pr b{color:var(--accent-text);font-size:15px} .gov-pr span{font-size:13px;color:var(--ink2)}
+@media (max-width:520px){.gov-pr{grid-template-columns:1fr}}
+.tip{position:fixed;z-index:50;pointer-events:none;background:var(--ink);color:var(--panel);font-size:12px;border-radius:6px;padding:4px 8px;max-width:260px;display:none}
 .welcome{text-align:center;padding:40px 16px}
 .welcome h2{justify-content:center}
 /* 第一次使用引導 */
@@ -135,25 +255,52 @@ dialog legend{font-size:13px;color:var(--muted);padding:0 6px}
 .ob-safe{background:var(--warn-bg);border:1px solid var(--warn);border-radius:10px;padding:10px 14px;margin:0 0 12px;font-size:13.5px}
 .ob-safe ul{margin:4px 0 0;padding-left:20px;display:grid;gap:3px}
 .bind{border:1px solid var(--accent,#3b82f6);border-radius:10px;padding:10px 12px;margin:0 0 12px}
-.bind .bind-st{margin:6px 0;font-size:14px;white-space:pre-line}
-.bind .bind-st.ok{color:var(--ok,#16a34a)}.bind .bind-st.bad{color:var(--bad,#dc2626)}
+.bind .bind-st{margin:8px 0;font-size:15px;font-weight:600;white-space:pre-line}
+.bind .bind-st.ok{color:var(--ok)}.bind .bind-st.bad{color:var(--crit-ink)}
+.bind-guide{margin-top:8px;font-size:13px;color:var(--ink2)} .bind-guide>summary{cursor:pointer;color:var(--muted)}
+.adv{border:1px dashed var(--axis);border-radius:10px;padding:8px 12px} .adv>summary{cursor:pointer;color:var(--ink2);font-size:13.5px}
+.adv[open]>summary{margin-bottom:8px}
 .bind ol{margin:6px 0 0;padding-left:20px;display:grid;gap:3px;font-size:13px}
 /* AI 排程產出 */
-.aip{margin-bottom:14px;border-left:5px solid var(--s1)}
-.aip-sum{font-size:16px;font-weight:600;margin-bottom:6px;overflow-wrap:anywhere}
-.aip details summary{cursor:pointer;color:var(--ink2);font-size:13px}
-.aip .out{margin-top:6px}
+.aip{margin-bottom:16px;padding:12px 16px}
+.aip>summary{list-style:none;cursor:pointer;display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:baseline}
+.aip>summary::-webkit-details-marker{display:none}
+.aip-t{font-weight:700;font-size:14px;white-space:nowrap}
+.aip-sum{font-size:14.5px;color:var(--ink);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.aip[open] .aip-sum{display:none}   /* 展開後結論已在下方的重點卡片，不重複顯示 */
+.aip-w{font-size:12.5px;color:var(--muted);white-space:nowrap;grid-column:3;justify-self:end}
+.aip .out{margin-top:10px}
+.aip.stale-w{border-color:var(--warn)}
+/* AI 摘要卡片 */
+.ai-call{border-left:4px solid var(--accent);background:var(--accent-weak);border-radius:8px;padding:10px 14px;margin:8px 0;font-weight:600;font-size:15px;line-height:1.6}
+.ai-k{display:inline-block;font-size:12px;font-weight:700;color:var(--accent-text);margin-right:8px;letter-spacing:.04em}
+.ai-sec{border:1px solid var(--grid);border-radius:12px;padding:10px 14px;margin-top:10px;background:var(--surface)}
+.ai-h{display:flex;align-items:center;gap:8px;font-weight:700;font-size:14px;margin-bottom:4px}
+.ai-h i{width:9px;height:9px;border-radius:50%;background:var(--s3);flex:none}
+.ai-h small{font-weight:600;color:var(--ink2);background:var(--grid);border-radius:999px;padding:0 8px;font-size:12px}
+.t-crit .ai-h i{background:var(--crit)} .t-warn .ai-h i{background:var(--warn)}
+.t-crit{border-left:3px solid var(--crit)} .t-warn{border-left:3px solid var(--warn)}
+.ai-li{padding:7px 0;border-top:1px solid var(--grid);font-size:14px;line-height:1.55}
+.ai-h+.ai-li,.ai-p+.ai-li{border-top:0}
+.ai-li .lead{display:block;font-size:14.5px}
+.ai-li>span{color:var(--ink2)}
+.ai-p{font-size:14px;color:var(--ink2);padding:2px 0}
+.hn{font-weight:700;color:var(--ink);background:var(--grid);border-radius:4px;padding:0 4px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.t-crit .hn{background:var(--crit-bg);color:var(--crit-ink)} .t-warn .hn{background:var(--warn-bg);color:var(--warn-ink)}
+.ai-more{margin-top:2px;font-size:13px} .ai-more>summary{cursor:pointer;color:var(--muted);padding:4px 0}
+.out:has(.ai-sec),.out:has(.ai-call){border:0;background:transparent;padding:0}
 /* 視覺化 */
-.chip.okc{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-line)}
+.chip.okc{background:var(--ok-bg);color:var(--ok-ink);border-color:transparent}
 .kpi-top{display:flex;justify-content:space-between;align-items:flex-end;gap:6px}
 .spark{flex:none;margin-bottom:4px}
-.hs{display:grid;grid-template-columns:repeat(auto-fill,minmax(205px,1fr));gap:10px}
-.hs-t{text-align:left;background:var(--page);border:1px solid var(--ring);border-left:5px solid var(--axis);border-radius:10px;padding:9px 12px;display:block;width:100%}
+.hs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.hs-t{text-align:left;background:var(--page);border:1px solid var(--ring);border-left:4px solid var(--axis);border-radius:10px;padding:9px 12px;display:block;width:100%}
 .hs-t.crit{border-left-color:var(--crit)} .hs-t.warn{border-left-color:var(--warn)} .hs-t.ok{border-left-color:var(--ok-line)}
 button.hs-t:hover{border-color:var(--axis);background:var(--surface)}
-.hs-n{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:14.5px}
-.hs-m{color:var(--ink2);font-size:12.5px;margin-top:4px}
-.hs-w{color:var(--muted);font-size:12px;margin-top:2px}
+.hs-n{display:flex;gap:6px;align-items:center;flex-wrap:wrap;font-size:15px}
+.hs-m{color:var(--ink2);font-size:13px;margin-top:3px}
+.hs-w{color:var(--muted);font-size:12.5px;margin-top:2px}
+.hs-m i{font-style:normal;color:var(--crit-ink);font-weight:600}
 .insight{font-weight:600;margin:0 0 8px}
 svg.flow{width:100%;height:auto;display:block}
 table.heat-t{min-width:560px}
@@ -168,7 +315,7 @@ table.heat-t{min-width:560px}
 .g-lines{position:absolute;top:0;bottom:0;left:var(--gl);right:0;pointer-events:none}
 .g-lines i{position:absolute;top:0;bottom:0;border-left:1px solid var(--grid)}
 .g-today{position:absolute;top:0;bottom:0;border-left:2px solid var(--ink);z-index:2}
-.g-today span{position:absolute;top:-1px;left:3px;white-space:nowrap;font-size:10.5px;background:var(--ink);color:var(--surface);border-radius:3px;padding:0 4px;line-height:15px}
+.g-today span{position:absolute;top:-1px;left:3px;white-space:nowrap;font-size:10.5px;background:var(--ink);color:var(--panel);border-radius:3px;padding:0 4px;line-height:15px}
 .g-owner{font-weight:650;font-size:13.5px;padding:10px 0 3px;border-bottom:1px solid var(--grid)}
 .g-owner small{font-weight:400;color:var(--muted)}
 .g-row{height:26px}
@@ -176,7 +323,7 @@ table.heat-t{min-width:560px}
 .g-track{position:relative;height:26px}
 .g-bar{position:absolute;top:7px;height:12px;border-radius:3px;background:color-mix(in srgb,var(--c) 30%,transparent);border:1px solid var(--c);overflow:hidden;z-index:1}
 .g-fill{position:absolute;left:0;top:0;bottom:0;background:var(--c)}
-.g-arr{position:absolute;top:-2px;font-size:9px;color:var(--ink2)} .g-arr.l{left:1px} .g-arr.r{right:1px}
+.g-arr{position:absolute;top:-2px;font-size:9px;color:var(--ink)} .g-arr.l{left:1px} .g-arr.r{right:1px}
 .c-ok{--c:var(--s1)} .c-silent{--c:var(--warn)} .c-review{--c:var(--s2)} .c-held{--c:var(--s3)} .c-late{--c:var(--s1)}
 .g-od{position:absolute;top:9px;height:8px;border-radius:0 4px 4px 0;background:repeating-linear-gradient(135deg,var(--crit) 0 3px,transparent 3px 6px);border:1px solid var(--crit);z-index:1}
 .od-sw{background:repeating-linear-gradient(135deg,var(--crit) 0 3px,transparent 3px 6px);border:1px solid var(--crit)}
@@ -193,11 +340,15 @@ table.heat-t{min-width:560px}
 .pfill{height:100%;background:var(--s1)} .pfill.late{background:var(--crit)}
 .pbar span{position:absolute;right:7px;top:-1px;font-size:10.5px;color:var(--ink);mix-blend-mode:normal}
 .gm-why{font-size:13px;font-weight:600}
-.gm-note{font-size:12.5px;color:var(--ink2);margin-top:3px;overflow-wrap:anywhere}
+.gm-note{font-size:13px;color:var(--ink2);margin-top:3px;overflow-wrap:anywhere;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 @media (max-width:520px){.gantt{--gl:130px}}
 /* 週會週報 */
-.views{display:flex;gap:6px;margin:0 0 14px;flex-wrap:wrap}
-.views .tab{font-size:14.5px;padding:6px 16px}
+.views{display:flex;gap:4px;margin:0 0 16px;flex-wrap:wrap;border-bottom:1px solid var(--grid);position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--page) 82%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);padding-top:4px}
+.kbd-hint{margin-top:24px;text-align:center} kbd{font:inherit;font-size:12px;border:1px solid var(--axis);border-bottom-width:2px;border-radius:5px;padding:0 5px;background:var(--surface);color:var(--ink2)}
+@media (max-width:640px){.kbd-hint{display:none}}
+.views .tab{font-size:15px;font-weight:600;padding:9px 16px;border:0;border-radius:0;border-bottom:3px solid transparent;margin-bottom:-1px;background:transparent;color:var(--ink2)}
+.views .tab:hover{background:transparent;color:var(--ink)}
+.views .tab[aria-selected="true"]{background:transparent;color:var(--ink);border-bottom-color:var(--accent)}
 .wk-bar{margin-bottom:14px}
 .wk-bar .row{margin:0 0 6px}
 .wk-owner{margin-bottom:14px}
@@ -220,8 +371,16 @@ table.heat-t{min-width:560px}
 .wk-held summary{cursor:pointer;font-weight:600;color:var(--ink2)}
 .wk-mini{padding:8px 0;border-top:1px solid var(--grid)}
 .wk-done{margin-top:10px;padding-top:8px;border-top:1px dashed var(--axis);color:var(--ink2);font-size:13.5px}
-.sn{color:#8a6100;font-weight:600} :root[data-theme="dark"] .sn{color:#f6c453}
-@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])) .sn{color:#f6c453}}
+.sn{color:var(--warn-ink);font-weight:600}
+.wk-line{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:8px 0;border-top:1px solid var(--grid)}
+.wk-line .wk-kp{grid-column:2 / 4;margin:0;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.wk-fresh{margin-top:8px;border-top:1px dashed var(--axis);padding-top:8px}
+.wk-fresh>summary{cursor:pointer;font-weight:600;color:var(--ink2)}
+.wk-line .wk-notebox>summary{margin-left:0} .wk-line .wk-note{width:100%;margin-left:0}
+.wk-line.reported{opacity:.55}
+.wk-notebox>summary{cursor:pointer;color:var(--muted);font-size:13px;margin-left:30px}
+.wk-notebox[open]>summary{margin-bottom:4px}
+.wk-sum{color:var(--ink2);font-size:13.5px;margin:-4px 0 14px}
 .wk-focus .wk-title{font-size:22px}
 .wk-focus .wk-kp{font-size:19px;line-height:1.7;padding:14px 16px}
 .wk-focus .wk-meta{font-size:14px}
@@ -230,16 +389,32 @@ table.heat-t{min-width:560px}
 .wk-focus .wk-note{font-size:15px}
 @media print{
   body{background:#fff;color:#000}
-  header.top .actions,.views,.wk-bar,.drawer,.banner,.tip,.wk-chk{display:none!important}
+  header.top .actions,.views,.wk-bar,.drawer,.banner,.tip,.wk-chk,.kbd-hint{display:none!important}
   .card{border:0;padding:0 0 8px;box-shadow:none}
   .wk-item{break-inside:avoid}
   .wk-note:placeholder-shown{display:none}
   .wk-note{border:0;padding:0;background:transparent;color:#000}
   .wk-kp{background:#fff}
 }
-@media (max-width:960px){.kpis{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr}}
-@media (max-width:520px){.kpi .n{font-size:26px} .dec{grid-template-columns:1fr} }
+@media (max-width:960px){.kpis.five{grid-template-columns:repeat(2,1fr)} .grid2{grid-template-columns:1fr}}
+@media (max-width:640px){.views .tab{padding:9px 9px;font-size:14px} .views{gap:0}
+  .kpis{grid-template-columns:repeat(3,1fr);gap:8px} .kpi{padding:10px 11px} .kpi .n{font-size:30px} .kpi .d{display:none} .kpi .spark{display:none} .hero .t{font-size:19px}
+  .aip>summary{grid-template-columns:auto 1fr} .aip-w{display:none}}
+@media (max-width:520px){.kpis.five .kpi .n{font-size:26px} .dec{grid-template-columns:1fr} .kpis:not(.five) .kpi .l{font-size:13px}}
 @media (forced-colors:active){.seg{forced-color-adjust:none}}
+
+/* ── 層次：只用在「底」，不碰文字與數字 ──
+   頁面＝極淡縱向漸層；卡片＝上亮下暗＋柔和陰影；卡片內的小卡再深一階；狀態卡頂端帶一點點狀態色 */
+.card,.kpi,.aip{background-color:var(--surface);background-image:linear-gradient(180deg,var(--card-top),var(--card-bot));box-shadow:var(--elev)}
+.mt,.hs-t,.gm-c,.impv{background-image:linear-gradient(180deg,var(--tile-top),var(--tile-bot))}
+.impv{background-image:none}
+.kpi.tone-crit{background-image:linear-gradient(180deg,color-mix(in srgb,var(--crit) 9%,var(--card-top)),var(--card-bot) 70%)}
+.kpi.tone-warn{background-image:linear-gradient(180deg,color-mix(in srgb,var(--warn) 9%,var(--card-top)),var(--card-bot) 70%)}
+.kpi.tone-ok{background-image:linear-gradient(180deg,color-mix(in srgb,var(--ok-line) 8%,var(--card-top)),var(--card-bot) 70%)}
+.btn.primary{background:linear-gradient(180deg,var(--btn-top),var(--accent))}
+.seg,.pfill,.impv-bar i{background-image:linear-gradient(180deg,rgba(255,255,255,.20),rgba(255,255,255,0) 75%)!important}
+dialog,.drawer{background-image:linear-gradient(180deg,var(--card-top),var(--card-bot))}
+.views{border-bottom-color:transparent;background-image:linear-gradient(90deg,transparent,transparent),linear-gradient(90deg,color-mix(in srgb,var(--accent) 45%,var(--grid)),var(--grid) 35%,var(--grid));background-size:100% 100%,100% 1px;background-position:0 0,0 100%;background-repeat:no-repeat}
 </style>
 </head>
 <body>
@@ -250,11 +425,12 @@ table.heat-t{min-width:560px}
       <div class="sub" id="sub">尚未載入</div>
     </div>
     <div class="actions">
-      <button class="btn" id="btnRefresh">重新整理</button>
       <button class="btn primary" id="btnAI">AI 助理</button>
-      <button class="btn" id="btnTheme" title="切換深淺色">深淺色</button>
-      <button class="btn" id="btnSettings">設定</button>
-      <button class="btn" id="btnLogout" hidden title="清除這台電腦儲存的 monday token">登出</button>
+      <button class="btn ghost" id="btnRefresh">重新整理</button>
+      <button class="btn ghost" id="btnTheme" title="切換深淺色">深淺色</button>
+      <button class="btn ghost" data-act="gov" title="資料與 AI 使用說明">治理</button>
+      <button class="btn ghost" id="btnSettings">設定</button>
+      <button class="btn ghost" id="btnLogout" hidden title="清除這台電腦儲存的 monday token">登出</button>
     </div>
   </header>
   <nav class="views" id="views" role="tablist" aria-label="頁面">
@@ -262,9 +438,12 @@ table.heat-t{min-width:560px}
     <button class="tab" role="tab" data-act="view" data-view="viz">視覺總覽</button>
     <button class="tab" role="tab" data-act="view" data-view="weekly">週會週報</button>
     <button class="tab" role="tab" data-act="view" data-view="gm">總經理視角</button>
+    <button class="tab" role="tab" data-act="view" data-view="impact">成效</button>
   </nav>
   <div id="banner"></div>
   <main id="main"></main>
+  <div class="note foot-links"><button type="button" class="linkb" data-calc="all">所有數字的計算方式</button>　<button type="button" class="linkb" data-act="gov">資料與 AI 使用說明</button></div>
+  <div class="note kbd-hint">快捷鍵：<kbd>1</kbd>–<kbd>5</kbd> 切換頁面　<kbd>/</kbd> 搜尋　<kbd>R</kbd> 重新整理　<kbd>A</kbd> AI 助理　<kbd>Esc</kbd> 關閉面板</div>
 </div>
 
 <aside class="drawer" id="drawer" aria-label="AI 助理">
@@ -306,13 +485,15 @@ table.heat-t{min-width:560px}
         <div class="bind-st" id="bindSt">尚未偵測</div>
         <div class="row"><button type="button" class="btn small primary" id="btnBind">綁定我的 Claude 帳號</button><button type="button" class="btn small" id="btnBindCheck">偵測狀態</button></div>
         <div class="note" id="bindLocalNote" hidden>你正在使用<b>本機版</b>：AI 會自動綁定你自己的 Claude 帳號；第一次需要登入公司帳號（只需一次）。</div>
-        <div id="bindGuide"><div class="note" style="margin:8px 0 4px"><b>要用 AI 的人，請用「本機版」</b>（在公開網址上，瀏覽器通常不讓網頁連到你電腦上的程式；不用 AI 的人不需要做這些，所有分析都能正常使用）：</div>
+        <details class="bind-guide" id="bindGuide"><summary>還沒安裝？要用 AI 才需要（約 5 分鐘）</summary><div class="note" style="margin:8px 0 4px">在公開網址上，瀏覽器通常不讓網頁連到你電腦上的程式，所以要用「本機版」。不用 AI 的人不需要做這些，所有分析都能正常使用。</div>
           <ol>
             <li>下載安裝包：<a id="lnkZip" href="https://github.com/hcma204-lab/RDDCC-Leader-View-app/archive/refs/heads/master.zip" target="_blank" rel="noopener">下載 ZIP</a>，解壓縮到固定資料夾（例如 <code>D:\ClaudeBridge</code>）。</li>
             <li>雙擊裡面的 <b>install-bridge-autostart.bat</b>（只需一次）。需要已安裝 <b>Node.js 18 以上</b>，以及 <b>Claude 桌面 App 或 Claude Code</b>。若 Windows 跳出藍色警告，按「其他資訊」→「仍要執行」。</li>
             <li>開啟 <a href="http://127.0.0.1:8787/" target="_blank" rel="noopener"><b>http://127.0.0.1:8787/</b></a>（本機版儀表板），到「設定」貼上你自己的 monday token，並按「綁定我的 Claude 帳號」。第一次會請你用公司 Claude 帳號登入。</li>
-            <li>每個人用自己的電腦與自己的 Claude 帳號，互不影響；之後開機會自動啟動，直接開上面的網址即可。</li></ol></div>
+            <li>每個人用自己的電腦與自己的 Claude 帳號，互不影響；之後開機會自動啟動，直接開上面的網址即可。</li></ol></details>
       </div>
+      <details class="adv" id="advAI"><summary>進階：改用 API key 或其他 AI 端點（一般不用）</summary>
+      <div style="display:grid;gap:10px">
       <label>類型
         <select id="fProv">
           <option value="none">不使用 AI</option>
@@ -332,7 +513,17 @@ table.heat-t{min-width:560px}
         <input type="text" id="fModel" placeholder="例如 claude-sonnet-5-5、gpt-4o、或內部模型名">
       </label>
       <div class="row"><button type="button" class="btn small" id="btnTestAI">測試 AI 連線</button><span class="note" id="testAIOut" style="white-space:pre-line"></span></div>
+      </div></details>
       <div class="note">啟用 AI 時，被你按下按鈕的那一次，會把「彙整後的項目名稱、負責人、日期、狀態」送到上面的端點。請只使用公司核准的端點。</div>
+    </fieldset>
+    <fieldset>
+      <legend>總經理頁的時效目標（選填）</legend>
+      <div class="row" style="margin:0;align-items:flex-end">
+        <label>團隊準時交件 ≥（%）<input type="number" id="fTgTeam" min="0" max="100" style="width:110px"></label>
+        <label>整體準時結案 ≥（%）<input type="number" id="fTgClose" min="0" max="100" style="width:110px"></label>
+        <label>主管審核 ≤（工作天）<input type="number" id="fTgRev" min="0" max="365" style="width:110px"></label>
+      </div>
+      <div class="note" style="margin:0">留空＝不設目標。設定後，總經理頁記分卡會顯示「達標」或目標值。</div>
     </fieldset>
     <fieldset>
       <legend>行為</legend>
@@ -345,6 +536,37 @@ table.heat-t{min-width:560px}
       <button type="button" class="btn small" id="btnClear">清除已存設定</button>
       <span><button type="button" class="btn" id="btnCancel">取消</button> <button type="submit" class="btn primary" id="btnSave" value="save">儲存並載入</button></span>
     </div>
+  </form>
+</dialog>
+<dialog id="calcDlg" class="gov calc-dlg" aria-label="計算方式說明">
+  <form method="dialog"><div id="calcBody"></div>
+    <div class="row" style="justify-content:flex-end"><button class="btn primary" value="close">關閉</button></div></form>
+</dialog>
+<dialog id="govDlg" class="gov">
+  <form method="dialog">
+    <h3>資料與 AI 使用說明（治理）</h3>
+    <div class="gov-pr"><div><b>唯讀</b><span>只讀取 monday，不修改看板內容</span></div><div><b>人工把關</b><span>AI 只給建議與草稿，不自動發送</span></div><div><b>資料在自己電腦</b><span>token、紀錄只存本機，不上傳</span></div></div>
+    <section><h4>讀什麼、寫什麼</h4><ul>
+      <li>用<b>每個人自己的 monday 個人 token</b>讀取「研發文管課-工作進度追蹤」；你只看得到自己有權限的看板。</li>
+      <li>儀表板本身<b>沒有任何寫入 monday 的功能</b>。</li>
+      <li>唯一會寫入的是每日排程：把晨報、預警寫到一個<b>私人的「輸出看板」</b>，不改動來源看板。</li></ul></section>
+    <section><h4>AI 會看到什麼</h4><ul>
+      <li>晨報、問答、總經理摘要：只收到<b>彙整後的欄位</b>（項目名稱、負責人、狀態、日期、逾期／無動靜天數）。</li>
+      <li>週會摘要：另含各項目「重點事項」文字（每項最多 500 字）。</li>
+      <li>AI 預審：只有你<b>按下按鈕的那一個項目</b>，會送出它的內容描述、重點事項、檔名、子項目與最近留言。</li>
+      <li>AI 透過你<b>自己的公司 Claude 帳號</b>回答，不使用 API key；橋接程式只接受本機連線，執行時<b>不開放任何工具</b>、不保留對話，也不記錄提問與回覆內容。</li></ul></section>
+    <section><h4>資料放在哪</h4><ul>
+      <li>monday token、設定、成效紀錄都只存在<b>這台電腦的瀏覽器</b>，不在程式碼、網址或 GitHub 上。</li>
+      <li>可隨時按「登出」清除 token，或在「成效」頁匯出、清除紀錄。</li></ul></section>
+    <section><h4>誰負責、怎麼把關</h4><ul>
+      <li>催辦訊息只是<b>草稿</b>，由主管檢視後自行發送。</li>
+      <li>AI 內容僅供參考，看板無法判斷的事（例如項目是否已線下審過）一律標示「待確認」。</li>
+      <li>「可能逾期」是規則推估，每項都列出理由，並在「成效」頁追蹤預警後的實際結果。</li></ul></section>
+    <section><h4>已知限制</h4><ul>
+      <li>每日排程需要電腦開機且 Claude 桌面 App 開著；沒執行的日子就沒有晨報。</li>
+      <li>主管審核天數以「完成日期」到「主管審核日期」計算；若同仁晚填完成日期，數字會偏短。</li>
+      <li>目前為<b>試辦版</b>，由個人 GitHub 頁面提供；擴大使用前應移到公司指定的位置。</li></ul></section>
+    <div class="row" style="justify-content:space-between"><button type="button" class="linkb" data-calc="all">各項數字的計算方式 →</button><button class="btn primary" value="close">關閉</button></div>
   </form>
 </dialog>
 <div class="tip" id="tip"></div>
@@ -381,6 +603,10 @@ const CONFIG = {
     files:'file_mksnpq5m',        // 相關檔案
     reqConfirmed:'boolean_mksn63t2', // 需求確認完成
     system:'dropdown_mksegvba',   // 系統類別
+    reviewDate:'date_mksmxdht',   // 主管審核日期（審核完成＝歸檔）
+    actual:'timerange_mm5h3t6c',  // 實際執行（開始～完成）
+    reviewReason:'color_mm9e5sqd',  // ✏️審核等待原因（主管填，送審時自動設「排隊待審」，結案後保留）
+    delayReason:'color_mm9edjty',   // ✏️逾期原因（負責人填，超過預計完成日時選擇延誤原因，結案後保留）
   },
 
   // 狀態標籤文字（必須和 monday 上完全一致）
@@ -396,10 +622,13 @@ const CONFIG = {
     staleDays: 30,           // 無動靜超過幾天算靜默
     staleDueWithin: 60,      // 且距到期不到幾天
     watchDays: 15,           // 無動靜 15–30 天列入「觀察」
+    forecastDays: 14,        // 預測式預警：看未來幾天內到期的項目是否可能趕不上
     preDueNoUpdateDays: 3,   // 3 天內到期卻 3 天沒更新 → 預警
-    loadWarn: 8,             // 一人進行中項目數超過就標示
+    loadWarn: 8,             // （舊）一人進行中項目數門檻；負載判斷已改用下面的加權指數
+    loadCapacity: 50,        // 加權負載：總分達這個值＝指數 10（約等於 12 件「中×中」的一般項目）
+    loadIndexWarn: 8,        // 加權負載指數 ≥ 8 視為偏高
     ignoreNameRegex: '走動管理繳交', // 名稱符合者不納入靜默判斷
-    maxDecisions: 8,         // 「需要你決策」預設顯示幾條
+    maxDecisions: 5,         // 「需要你決策」預設顯示幾條
   },
 
   routineGroupIds: ['topics'],            // 例行性群組（週會週報可選擇是否納入）
@@ -442,6 +671,35 @@ const lsGet = k => { try { return localStorage.getItem(k); } catch { return null
 const lsSet = (k,v) => { try { localStorage.setItem(k,v); return true; } catch { return false; } };
 const lsDel = k => { try { localStorage.removeItem(k); } catch {} };
 
+/* AI／晨報文字 → 結構化卡片：段落標題變成有色標籤、清單變成「重點詞＋說明」列、數字（項／天…）自動醒目、超過 4 條先收合。
+   不是 markdown 的純文字也能處理（整段當說明）。全程先跳脫再轉換，安全。 */
+const AI_TONE = [[/一句話|結論|總結|重點/, 'call'], [/決策|拍板|需要你|需要您/, 'crit'], [/到期|今日|本週|預警/, 'warn'], [/風險|卡關|逾期|追問|注意|待確認/, 'warn']];
+const hiNum = h => h.replace(/(\d+(?:\.\d+)?\s*(?:項|天|週|條|人|%|筆|位))/g, '<span class="hn">$1</span>');
+const inl = s => hiNum(esc(s).replace(/\*\*(.+?)\*\*/g, '<b>$1</b>'));
+function richAI(text, keepOpen){
+  const secs = []; let cur = { title:'', items:[], paras:[] };
+  const push = () => { if (cur.items.length || cur.paras.length) secs.push(cur); };
+  for (const raw of String(text || '').split('\n')) {
+    const t = raw.trim(); if (!t) continue;
+    const hd = t.match(/^#{1,4}\s+(.+)$/) || t.match(/^\*\*([^*]{1,24})\*\*[:：]?$/);
+    if (hd) { push(); cur = { title:hd[1].replace(/\*\*/g, '').replace(/^[一二三四五六七八九十]+[、.]\s*/, '').trim(), items:[], paras:[] }; continue; }
+    const li = t.match(/^[-*•]\s+(.*)$/) || t.match(/^\d+[.、)]\s+(.*)$/);
+    if (li) cur.items.push(li[1]); else cur.paras.push(t);
+  }
+  push();
+  if (!secs.length) return '';
+  return secs.map(s => {
+    const tone = (AI_TONE.find(([re]) => re.test(s.title)) || [0, 'n'])[1];
+    if (tone === 'call') return `<div class="ai-call">${s.title ? `<span class="ai-k">${esc(s.title)}</span>` : ''}${[...s.paras, ...s.items].map(inl).join('<br>')}</div>`;
+    const row = it => { const m = it.match(/^(.{2,16}?)[：:]\s*(.+)$/); return m ? `<div class="ai-li"><b class="lead">${inl(m[1])}</b><span>${inl(m[2])}</span></div>` : `<div class="ai-li"><span>${inl(it)}</span></div>`; };
+    const shown = s.items.slice(0, 4), rest = s.items.slice(4);
+    const none = s.items.length === 1 && /^(無|沒有|目前沒有|無需處理)[。.]?$/.test(s.items[0].trim());
+    return `<section class="ai-sec t-${tone}">${s.title ? `<div class="ai-h"><i></i>${esc(s.title)}${s.items.length > 1 ? `<small>${s.items.length}</small>` : ''}</div>` : ''}
+      ${s.paras.map(p => `<div class="ai-p">${inl(p)}</div>`).join('')}
+      ${none ? '<div class="ai-p" style="color:var(--muted)">沒有需要處理的項目</div>' : shown.map(row).join('')}
+      ${rest.length ? `<details class="ai-more"><summary>還有 ${rest.length} 條</summary>${rest.map(row).join('')}</details>` : ''}</section>`;
+  }).join('');
+}
 function md(text){                                            // 極簡 markdown：粗體、清單、換行（先跳脫，安全）
   const lines = esc(text).split('\n'); let out = '', inList = false;
   for (const raw of lines) {
@@ -460,8 +718,8 @@ function md(text){                                            // 極簡 markdown
    ═══════════════════════════════════════════════════════════ */
 const S = Object.assign({ token:'', boardId:String(CONFIG.monday.boardId), aiProvider:'none', aiUrl:'', aiKey:'', aiModel:'', demo:false, auto:false, notify:false, remember:true },
   (() => { try { return JSON.parse(lsGet('cfdash.settings') || '{}'); } catch { return {}; } })());
-const ST = { items:[], done:[], hist:[], ai:{}, vz:{ future:CONFIG.viz.ganttFutureDays, owner:'', showHeld:true, showReview:true },
-  view:({ '#weekly':'weekly', '#viz':'viz', '#gm':'gm' })[location.hash] || 'dash', wk:{ win:CONFIG.weekly.windowDays, routine:CONFIG.weekly.includeRoutine, owner:'', focus:false }, A:null, tab:'review', filter:'', ownerFilter:'', showAllDec:false, loadedAt:null, error:null, loading:false, aiTab:'brief', aiSel:null, timer:null };
+const ST = { items:[], done:[], hist:[], ai:{}, vz:{ future:CONFIG.viz.ganttFutureDays, owner:'', showHeld:true, showReview:true, onlyRisk:true },
+  view:({ '#weekly':'weekly', '#viz':'viz', '#gm':'gm', '#impact':'impact' })[location.hash] || (['viz', 'weekly', 'gm', 'impact'].includes(lsGet('cfdash.view')) ? lsGet('cfdash.view') : 'dash'), wk:{ win:CONFIG.weekly.windowDays, routine:CONFIG.weekly.includeRoutine, owner:'', focus:false }, A:null, tab:'review', filter:'', ownerFilter:'', showAllDec:false, loadedAt:null, error:null, loading:false, aiTab:'brief', aiSel:null, timer:null };
 
 function saveSettings(){ if (S.remember) lsSet('cfdash.settings', JSON.stringify(S)); else lsDel('cfdash.settings'); }
 
@@ -513,7 +771,7 @@ async function fetchActive(){
 
 async function fetchDone(){                                    // 近期完成（結案歸檔），週報的「本週完成」用；依完成日排序後在本機篩選
   const W = CONFIG.weekly, C = CONFIG.columns;
-  const light = `id name url created_at group{id title} column_values(ids:${JSON.stringify([C.owner, C.timeline, C.status, C.type, C.doneDate])}){id type text value}`;   // 精簡欄位：已完成的項目不需要重點事項全文，流量小很多
+  const light = `id name url created_at group{id title} column_values(ids:${JSON.stringify([C.owner, C.timeline, C.status, C.type, C.doneDate, C.system, C.reviewDate, C.actual, C.reviewReason, C.delayReason])}){id type text value}`;   // 精簡欄位：已完成的項目不需要重點事項全文，流量小很多
   const d = await mondayQuery(`query($b:[ID!]){ boards(ids:$b){ items_page(limit:${W.doneFetchLimit}, query_params:{rules:[{column_id:"${C.status}", compare_value:${JSON.stringify(W.doneStatusIndexes)}, operator:any_of}], order_by:[{column_id:"${C.doneDate}", direction:desc}]}){ items{ ${light} } } } }`, { b:[S.boardId] });
   const p = d.boards && d.boards[0] && d.boards[0].items_page;
   return p ? p.items.map(normalize) : [];
@@ -539,6 +797,10 @@ function normalize(raw){
     status: txt(C.status), type: txt(C.type), review: txt(C.review),
     importance: txt(C.importance), urgency: txt(C.urgency), system: txt(C.system),
     lastUpdatedCol: txt(C.lastUpdated) || null, doneDate: txt(C.doneDate) || null,
+    reviewDate: txt(C.reviewDate) || null,                                     // 主管審核完成日（歸檔）
+    reviewReason: txt(C.reviewReason) || null,                                 // 審核等待原因（審核中與結案後都有值）
+    delayReason: txt(C.delayReason) || null,                                   // 逾期原因（負責人填）
+    actStart: (val(C.actual) || {}).from || null, actEnd: (val(C.actual) || {}).to || null,   // 實際執行起訖
     keyPoints: txt(C.keyPoints), keyPointsAt: (val(C.keyPoints) || {}).changed_at ? toTpeDate(val(C.keyPoints).changed_at) : null, // 重點事項內容與最後修改日
     hasDesc: !!txt(C.desc), fileCount: files ? files.length : 0, reqConfirmed: (val(C.reqConfirmed) || {}).checked === true,
     commentDates: (raw.updates || []).map(u => toTpeDate(u.created_at)),
@@ -612,7 +874,35 @@ function analyze(items, today){
   const lm = {};
   act.forEach(i => { const o = lm[i.owner] || (lm[i.owner] = { owner:i.owner, running:0, review:0, other:0 });
     if (i.isReview) o.review++; else if (i.isRunning) o.running++; else o.other++; });
-  const load = Object.values(lm).map(o => ({ ...o, work:o.running + o.review, warn:(o.running + o.review) > R.loadWarn, allReview:o.review >= 3 && o.running === 0 })).sort((a,b) => b.work - a.work);
+  // 加權負載指數（0–10）：不只數件數。每件分數＝綜合分數（重要程度×即時性，1–9）× 規模（預計時程長短）× 跨系統 × 時間壓力 × 狀態
+  const loadPts = i => {
+    if (i.status === L.paused || i.status === L.notStarted) return 0;                    // 暫緩／未啟案：目前不佔人力
+    const base = i.prio || 4, span = i.start && i.end ? diffDays(i.start, i.end) : 30;     // 綜合分數未填以 4（中×中）計
+    const fd = span <= 7 ? 0.8 : span <= 30 ? 1 : span <= 90 ? 1.2 : 1.4;
+    const ns = i.system ? i.system.split(/[,、，]\s*/).filter(Boolean).length : 1, fsys = Math.min(1.45, 1 + 0.15 * (Math.max(1, ns) - 1));
+    const fp = i.dueIn !== null && i.dueIn <= 7 ? 1.25 : 1, fst = i.isReview ? 0.25 : 1;    // 審核中：在等主管，只算少量
+    return base * fd * fsys * fp * fst; };
+  act.forEach(i => { i.loadPts = Math.round(loadPts(i) * 10) / 10; });
+  const load = Object.values(lm).map(o => {
+    const mine = act.filter(i => i.owner === o.owner), pts = mine.reduce((n, i) => n + i.loadPts, 0), idx = Math.min(10, Math.round(pts / R.loadCapacity * 100) / 10);
+    return { ...o, work:o.running + o.review, pts:Math.round(pts * 10) / 10, idx, over:pts > R.loadCapacity, warn:idx >= R.loadIndexWarn, allReview:o.review >= 3 && o.running === 0,
+      top:[...mine].sort((a, b) => b.loadPts - a.loadPts).slice(0, 3).filter(i => i.loadPts > 0).map(i => ({ name:i.name, pts:i.loadPts })) };
+  }).sort((a, b) => b.pts - a.pts || b.work - a.work);
+
+  // 預測式預警：還沒逾期、但依現況「很可能趕不上」的項目。規則式、每條都有理由，可以被驗證（不靠 AI 猜）
+  const ignF = new RegExp(R.ignoreNameRegex);
+  const forecast = act.filter(i => i.dueIn !== null && i.dueIn >= 0 && i.dueIn <= (R.forecastDays || 14) && i.status !== L.notStarted && !ignF.test(i.name)).map(i => {
+    const why = []; let score = 0;
+    if (i.status === L.paused) { score += 3; why.push('暫緩中卻快到期'); }
+    if (i.isRunning && i.inactive >= R.staleDays) { score += 3; why.push(`已 ${i.inactive} 天沒更新`); }
+    else if (i.isRunning && i.inactive >= R.watchDays) { score += 2; why.push(`${i.inactive} 天沒動靜`); }
+    const span = i.start && i.end ? diffDays(i.start, i.end) : 0, used = i.start ? diffDays(i.start, today) : 0;
+    if (i.isRunning && span > 0 && used / span >= 0.8 && i.inactive >= 3) { score += 2; why.push(`時程已用 ${Math.round(used / span * 100)}%，卻 ${i.inactive} 天沒更新`); }
+    if (i.isReview) { score += 1; why.push(`還在審核中，到期前要先審完`); }
+    const ow = load.find(x => x.owner === i.owner);
+    if (ow && ow.warn && i.prio > 3 && i.dueIn <= 7) { score += 1; why.push('負責人手上項目偏多'); }
+    return { item:i, score, why };
+  }).filter(f => f.score >= 3).sort((a, b) => a.item.dueIn - b.item.dueIn || b.score - a.score);
 
   // 需要你決策
   const D = [], seen = new Set();
@@ -633,8 +923,8 @@ function analyze(items, today){
 
   const kpis = { overdue: overdueAll.length, severe: bands.severe.length, review: review.length, oldestReview: review[0] ? review[0].reviewWait : 0,
     upcoming: upcoming.length, silent: silent.filter(i => i.silent !== 'watch').length, silentHigh: silent.filter(i => i.silent === 'high').length,
-    decide: decisionPending.length, active: act.length };
-  return { today, act, review, bands, silent, upcoming, load, decisions: D, decisionPending, kpis };
+    decide: decisionPending.length, active: act.length, forecast: forecast.length, decisions: D.length };
+  return { today, act, review, bands, silent, upcoming, load, decisions: D, decisionPending, forecast, kpis };
 }
 
 function dueText(i){ return i.dueIn === null ? '—' : i.dueIn < 0 ? `逾期 ${-i.dueIn} 天` : i.dueIn === 0 ? '今天到期' : `剩 ${i.dueIn} 天`; }
@@ -714,7 +1004,7 @@ function ownerHealth(A){                                          // 每位負�
     if (od.length) why.push(`逾期 ${od.length} 項`);
     if (sAny) why.push(`靜默 ${sAny} 項`);
     if (pOd) why.push(`暫緩逾期 ${pOd} 項`);
-    if (o.warn) why.push(`負載偏高（${o.work} 項）`);
+    if (o.warn) why.push(`負載偏高（指數 ${o.idx}／10，${o.work} 項）`);
     const level = (sev.length || od.length >= H.redOverdueCount || sH >= H.redSilentCount) ? 'crit' : why.length ? 'warn' : 'ok';
     return { owner:o.owner, level, why, waiting:o.allReview, counts:{ work:o.work, overdue:od.length, silent:sAny, review:o.review, soon, held:o.other } };
   });
@@ -768,6 +1058,25 @@ function gmText(G){                                               // 給總經�
   const lab = { crit:'需關注', warn:'留意', ok:'正常' }, L = [], risk = G.scope.filter(i => i.risk.level !== 'ok'), ok = G.scope.filter(i => i.risk.level === 'ok');
   L.push(`研發文管課進度摘要｜${G.today}`);
   L.push(`整體狀態：${lab[G.level]}。計畫性專案 ${G.n} 項：正常 ${G.c.ok}、留意 ${G.c.warn}、需關注 ${G.c.crit}。`);
+  if (G.time) {                                                   // 總經理最在意的「時效」
+    const T = G.time, pc = v => v === null ? '資料不足' : v + '%', dy = v => v === null ? '資料不足' : v + ' 天';
+    L.push('', '【時效（近 30 天 vs 前 30 天）】');
+    const wd = v => v === null ? '資料不足' : v + ' 個工作天';
+    L.push(`- 團隊準時交件（完成日期 ≤ 預計完成日）：${pc(T.teamOn.cur.v)}（前期 ${pc(T.teamOn.prev.v)}）`);
+    L.push(`- 整體準時結案（主管審核完成 ≤ 預計完成日）：${pc(T.closeOn.cur.v)}（前期 ${pc(T.closeOn.prev.v)}）`);
+    L.push(`- 團隊執行天數（實際執行起訖，中位數）：${wd(T.exec.cur.v)}（前期 ${wd(T.exec.prev.v)}）`);
+    L.push(`- 主管審核天數（完成日期到主管審核日期，中位數）：${wd(T.review.cur.v)}（前期 ${wd(T.review.prev.v)}）；目前仍有 ${G.kpis.review} 項在等審核`);
+    if (T.reviewShare !== null) L.push(`- 流程時間約 ${T.reviewShare}% 花在等主管審核（等待時間，不是處理時間）`);
+    if (T.bottleneck) L.push(`- 單次停留最久的階段：「${T.bottleneck.s}」，平均 ${r1(T.bottleneck.avg)} 天`);
+    if (G.tg && (G.tg.teamOn !== null || G.tg.closeOn !== null || G.tg.review !== null)) L.push(`- 目標：${[G.tg.teamOn !== null ? `團隊準時 ≥ ${G.tg.teamOn}%` : '', G.tg.closeOn !== null ? `結案準時 ≥ ${G.tg.closeOn}%` : '', G.tg.review !== null ? `主管審核 ≤ ${G.tg.review} 個工作天` : ''].filter(Boolean).join('、')}`);
+  }
+  if (G.delay && G.delay.late) { const M = G.delay, w = arr => arr.map(([r, n]) => `${r} ${n}`).join('、');
+    L.push('', '【結案沒準時，卡在哪裡（近 90 天）】', `- 結案 ${M.total} 件，其中 ${M.late} 件晚於預計完成日`,
+      `- 團隊階段已逾期 ${M.team} 件${M.teamWhy.length ? `（${w(M.teamWhy)}）` : ''}`, `- 到期當天才交件、排程沒留審核時間 ${M.nobuf} 件`,
+      `- 審核期間超過 ${M.rev} 件${M.revWhy.length ? `（${w(M.revWhy)}）` : ''}`); }
+  if (G.auto) { const a = G.auto, f = (v, u) => v === null ? '—' : v + u;
+    L.push('', '【持續改善（近 4 個月）】'); a.rows.forEach(r => L.push(`- ${r.m}${r.cur ? '（至今）' : ''}：準時交件 ${f(r.teamOn.v, '%')}、準時結案 ${f(r.closeOn.v, '%')}、執行 ${f(r.exec.v, ' 工作天')}、審核 ${f(r.review.v, ' 工作天')}`)); }
+  if (G.impv && G.impv.list.length) { L.push('', '【改善成效（人工時間）】', `- 每月省下約 ${G.impv.monthly} 小時，累計約 ${G.impv.total} 小時`); G.impv.list.forEach(p => L.push(`- ${p.name}：每件 ${p.before} 分 → ${p.after} 分（−${p.pct}%），每月約 ${p.perMonth} 件`)); }
   L.push('', '【需要關注的專案】'); if (!risk.length) L.push('- 無');
   risk.forEach(i => L.push(`- ${i.name}（${shortName(i.owner)}）｜${i.status}｜${i.end ? '到期 ' + mmdd(i.end) + '，' + dueText(i) : '無到期日'}｜${i.risk.why.join('、')}${i.latest ? '｜最新進度：' + i.latest : ''}`));
   L.push('', '【進度正常的專案】'); if (!ok.length) L.push('- 無');
@@ -781,8 +1090,14 @@ function gmText(G){                                               // 給總經�
 /* 每日 KPI 紀錄（只存在這台瀏覽器，用來畫迷你趨勢線；示範資料不記錄） */
 function histPush(A){
   let h = []; try { h = JSON.parse(lsGet('cfdash.hist') || '[]'); } catch {}
-  const k = A.kpis; h = h.filter(x => x.d !== A.today); h.push({ d:A.today, overdue:k.overdue, review:k.review, upcoming:k.upcoming, silent:k.silent, decide:k.decide });
+  const k = A.kpis; h = h.filter(x => x.d !== A.today); h.push({ d:A.today, overdue:k.overdue, review:k.review, upcoming:k.upcoming, silent:k.silent, decide:k.decide, forecast:k.forecast, severe:k.severe, active:k.active });
   h = h.slice(-60); lsSet('cfdash.hist', JSON.stringify(h)); return h;
+}
+
+/* 審核等待原因（monday「✏️審核等待原因」欄）：依件數排序；沒填的算「未標示」 */
+function reasonCount(list){
+  const m = {}; (list || []).forEach(i => { const r = i.reviewReason || '未標示'; m[r] = (m[r] || 0) + 1; });
+  return Object.entries(m).sort((a, b) => b[1] - a[1]);
 }
 
 /* 本機晨報（不用 AI）*/
@@ -792,14 +1107,16 @@ function localBrief(A){
   L.push('', '**一、需要你決策**');
   if (!A.decisions.length) L.push('- 無');
   A.decisions.slice(0, 6).forEach(d => {
-    if (d.kind === 'review') L.push(`- ${d.headline}。分佈：${Object.entries(d.dist).sort((a,b)=>b[1]-a[1]).map(([o,n]) => `${shortName(o)} ${n}`).join('、')}`);
+    if (d.kind === 'review') L.push(`- ${d.headline}。分佈：${Object.entries(d.dist).sort((a,b)=>b[1]-a[1]).map(([o,n]) => `${shortName(o)} ${n}`).join('、')}。等待原因：${reasonCount(d.review).map(([r, n]) => `${r} ${n}`).join('、')}`);
     else L.push(`- ${d.item.name}（${shortName(d.item.owner)}）：${d.headline}`);
   });
   L.push('', '**二、7 天內到期**');
   if (!A.upcoming.length) L.push('- 無'); A.upcoming.slice(0, 8).forEach(i => L.push(`- ${i.name}｜${i.end}｜${shortName(i.owner)}`));
   L.push('', '**三、逾期總覽**', `- 輕度 ${A.bands.mild.length}、中度 ${A.bands.mid.length}、嚴重 ${A.bands.severe.length}`);
-  L.push('', '**四、負載（進行中＋審核中）**');
-  L.push('- ' + A.load.filter(o => o.work).map(o => `${shortName(o.owner)} ${o.work}${o.warn ? '（偏高）' : ''}${o.allReview ? '（全卡在審核）' : ''}`).join('｜'));
+  L.push('', `**四、可能逾期（未來 ${CONFIG.rules.forecastDays} 天）**`);
+  if (!A.forecast.length) L.push('- 無'); A.forecast.slice(0, 6).forEach(f => L.push(`- ${f.item.name}（${shortName(f.item.owner)}）：${f.item.end} 到期，${f.why.join('、')}`));
+  L.push('', '**五、負載（進行中＋審核中）**');
+  L.push('- ' + A.load.filter(o => o.work).map(o => `${shortName(o.owner)} 指數 ${o.idx}（${o.work} 項）${o.warn ? '（偏高）' : ''}${o.allReview ? '（全卡在審核）' : ''}`).join('｜'));
   return L.join('\n');
 }
 const shortName = o => String(o).replace(/^[A-Za-z.]+_/, '');
@@ -813,15 +1130,15 @@ function demoItems(today){
   const mk = (name, owner, status, s, e, o = {}) => { out.push(Object.assign({ id:'demo'+(n++), name, url:'#', group:'group_mkse97n2', groupTitle:'臨時性',
     created: addDays(today, o.age ? -o.age : -60), owner, start: s === null ? null : addDays(today, s), end: e === null ? null : addDays(today, e),
     status, type:'臨時性', review:'', importance:o.imp||'中', urgency:o.urg||'中', system:'', lastUpdatedCol:o.last !== undefined ? (o.last === null ? null : addDays(today, o.last)) : addDays(today, -3),
-    doneDate:o.done ? addDays(today, o.done) : null, hasDesc:o.desc !== false, fileCount:o.files ?? 1, reqConfirmed:o.req !== false, commentDates:(o.cm || []).map(x => addDays(today, x)) }, o.group ? { group:o.group } : {})); };
+    doneDate:o.done ? addDays(today, o.done) : status === L.review ? addDays(today, o.last ?? -3) : null, reviewReason:o.rr || null, hasDesc:o.desc !== false, fileCount:o.files ?? 1, reqConfirmed:o.req !== false, commentDates:(o.cm || []).map(x => addDays(today, x)) }, o.group ? { group:o.group } : {})); };
   // 等審核
   mk('示範：料號流程梳理', P[0], L.review, -200, -190, { done:-190, last:-190, imp:'中', urg:'低', files:1, desc:false });
-  mk('示範：會議流程改版', P[1], L.review, -110, -90, { last:-90, imp:'低', urg:'低' });
-  mk('示範：客訴表單設計', P[2], L.review, -60, -17, { last:-17, cm:[-17] });
-  mk('示範：活動問卷板', P[3], L.review, -12, -11, { last:-11, files:0 });
-  mk('示範：月度彙整', M, L.review, -35, -10, { last:-10, imp:'低', urg:'低' });
-  mk('示範：預算彙整', P[3], L.review, -25, -9, { last:-9, imp:'高', urg:'中', cm:[-9] });
-  mk('示範：包裝文件', P[3], L.review, -20, -8, { last:-8 });
+  mk('示範：會議流程改版', P[1], L.review, -110, -90, { rr:'排隊待審', last:-90, imp:'低', urg:'低' });
+  mk('示範：客訴表單設計', P[2], L.review, -60, -17, { rr:'跨單位確認中', last:-17, cm:[-17] });
+  mk('示範：活動問卷板', P[3], L.review, -12, -11, { rr:'待補充說明', last:-11, files:0 });
+  mk('示範：月度彙整', M, L.review, -35, -10, { rr:'排隊待審', last:-10, imp:'低', urg:'低' });
+  mk('示範：預算彙整', P[3], L.review, -25, -9, { rr:'資料驗證中', last:-9, imp:'高', urg:'中', cm:[-9] });
+  mk('示範：包裝文件', P[3], L.review, -20, -8, { rr:'待上級／會議決議', last:-8 });
   // 暫緩／未啟案
   mk('示範：系統導入 A', P[4], L.paused, -300, -139, { last:-140, imp:'高', urg:'中', group:'group_title' });
   mk('示範：API 串接', M, L.paused, -150, -47, { last:-100, imp:'高', urg:'高', group:'group_title' });
@@ -870,11 +1187,13 @@ function demoAI(){                                              // 示範用的 
 }
 function demoDone(today){
   const P = ['組員甲','組員乙','組員丙','組員丁','組員戊'];
-  const offs = [-2, -4, -6, -9, -12, -16, -19, -23, -27, -31, -38, -45, -52, -60];           // 完成日分散在近 9 週
+  const offs = [-2, -4, -6, -9, -12, -16, -19, -23, -27, -31, -34, -38, -41, -45, -48, -52, -56, -60];           // 完成日分散在近 9 週（含前一個 30 天，供「較上期」比較）
   const rows = offs.map((d, k) => [k === 0 ? '示範：舊系統資料整理' : k === 1 ? '示範：訓練教材改版' : k === 2 ? '示範：欄位對照表' : `示範：已完成項目 ${k + 1}`, P[k % P.length], d]);
   return rows.map(([name, owner, d], k) => ({
-    id:'demod' + k, name, url:'#', group:'group_mkshesy3', groupTitle:'結案歸檔', created:addDays(today, d - 10 - (k * 3) % 14), owner, start:addDays(today, -30), end:addDays(today, d + 2),
-    status:'結案歸檔', type:'臨時性', review:'已審閱', importance:'中', urgency:'中', system:'', lastUpdatedCol:addDays(today, d), doneDate:addDays(today, d),
+    id:'demod' + k, name, url:'#', group:'group_mkshesy3', groupTitle:'結案歸檔', created:addDays(today, d - 8 - (k * 5) % 15 - (k > 9 ? 6 : 0)), owner, start:addDays(today, -30), end:addDays(today, d + (k % 4 === 1 ? -2 : k % 5 === 3 && k > 9 ? -3 : 2)),   // 示範：部分延誤，前一期延誤較多
+    status:'結案歸檔', type:k % 4 === 0 ? '計畫性' : '臨時性', review:'已審閱', importance:'中', urgency:'中', system:'', lastUpdatedCol:addDays(today, d), doneDate:addDays(today, d),
+    reviewReason:['排隊待審', '跨單位確認中', '資料驗證中', null][k % 4], delayReason:k % 4 === 1 ? ['需求變更／範圍擴大', '等待其他單位', '優先順序調整'][k % 3] : null,
+    reviewDate:addDays(today, Math.min(0, d + (k % 3 === 0 ? (k > 9 ? 12 : 6) : 2))), actStart:addDays(today, d - 4 - (k * 3) % 9), actEnd:addDays(today, d),   // 示範：審核天數不一
     hasDesc:true, fileCount:1, reqConfirmed:true, commentDates:[], keyPoints:'已完成並歸檔。', keyPointsAt:addDays(today, d) }));
 }
 function demoDetail(it){
@@ -919,7 +1238,7 @@ function render(){
   document.querySelectorAll('#views .tab').forEach(b => b.setAttribute('aria-selected', String(b.dataset.view === ST.view)));
   $('#sub').textContent = ST.loadedAt ? `${S.demo ? '示範資料' : 'monday 即時資料'}｜截至 ${ST.loadedAt}（${CONFIG.timezone}）` : '尚未載入';
   const bn = [];
-  if (S.demo) bn.push('<div class="banner demo"><b>目前是示範資料</b>（全部是假資料，沒有連 monday）。到「設定」貼上 monday API token 就會換成真實資料。</div>');
+  if (S.demo) bn.push('<div class="banner demo"><b>示範資料</b>（假資料，沒連 monday）。到「設定」貼上 token 即換成真實資料。</div>');
   if (ST.error) bn.push(`<div class="banner err"><b>載入失敗：</b>${esc(ST.error)}</div>`);
   $('#banner').innerHTML = bn.join('');
   $('#btnLogout').hidden = !S.token;                              // 有存 token 才顯示「登出」
@@ -930,32 +1249,40 @@ function render(){
   if (ST.view === 'weekly') { renderWeekly(main); return; }
   if (ST.view === 'viz') { renderViz(main); return; }
   if (ST.view === 'gm') { renderGM(main); return; }
+  if (ST.view === 'impact') { renderImpact(main); return; }
   const k = A.kpis, top = A.decisions[0];
   const headline = top ? (top.kind === 'review' ? top.headline : `${top.item.name}（${shortName(top.item.owner)}）— ${top.headline}`) : '目前沒有需要你立即決策的項目。';
-  const kp = (n, l, d, tab, key) => `<button class="kpi" data-act="tab" data-tab="${tab}"><div class="kpi-top"><div class="n">${n}</div>${key ? spark(key) : ''}</div><div class="l">${l}</div><div class="d">${d}</div></button>`;
+  const hs = ST.hist || [], prevH = [...hs].reverse().find(x => x.d < A.today);             // 上一次（前一天或更早）的紀錄，用來顯示「較上次」變化
+  const delta = (key, bad) => { if (!prevH || prevH[key] === undefined) return ''; const dv = k[key] - prevH[key]; if (!dv) return ''; return `<span class="dlt ${bad ? (dv > 0 ? 'up' : 'down') : 'flat'}" data-tip="較 ${prevH.d} 的 ${prevH[key]} 項${dv > 0 ? '增加' : '減少'} ${Math.abs(dv)} 項">${dv > 0 ? '▲' : '▼'}${Math.abs(dv)}</span>`; };
+  const kp = (n, l, d, tab, key, tone, bad = true) => `<button class="kpi tone-${tone}" data-act="tab" data-tab="${tab}"><div class="kpi-top"><div class="n">${n}${delta(key, bad)}</div>${key ? spark(key) : ''}</div><div class="l">${l}</div><div class="d">${d}</div></button>`;
+  const nudgeOwners = A.load.map(o => o.owner).filter(o => nudgeItems(A, o).length);
+  const nexts = [k.review ? `<button class="btn small" data-act="tab" data-tab="review">先清 ${k.review} 項審核</button>` : '',
+    nudgeOwners.length ? `<button class="btn small" data-act="nudgeAll">催辦 ${nudgeOwners.length} 位同事（產生草稿）</button>` : '',
+    `<button class="btn small ghost" data-act="copyBrief">複製今日晨報</button>`].filter(Boolean).join('');
   const decShown = ST.showAllDec ? A.decisions : A.decisions.slice(0, CONFIG.rules.maxDecisions);
   main.innerHTML = `
-  <section class="headline"><div class="k">今天最該先處理</div><div class="t">${esc(headline)}</div></section>
+  <section class="hero"><div class="k">今天最該先處理</div><div class="t">${esc(headline)}</div>
+    <div class="row" style="margin:-6px 0 14px">${nexts}</div>
+    <div class="kpis">
+      ${kp(k.overdue, '逾期項目', k.severe ? `其中嚴重 ${k.severe} 項` : '沒有嚴重逾期', 'all', 'overdue', k.overdue ? 'crit' : 'ok')}
+      ${kp(k.review, '等你審核', k.review ? `最久約 ${k.oldestReview} 天` : '沒有積壓', 'review', 'review', k.review ? 'warn' : 'ok')}
+      ${kp(k.upcoming, `${CONFIG.rules.upcomingDays} 天內到期`, k.upcoming ? '點開看清單' : '無', 'upcoming', 'upcoming', k.upcoming ? 'warn' : 'ok', false)}
+    </div>
+    <div class="kpi2"><button class="pill" data-act="tab" data-tab="silent">靜默風險 <b>${k.silent}</b>${k.silentHigh ? `<span>高風險 ${k.silentHigh}</span>` : ''}</button>${calc('silent')}<button class="pill" data-act="tab" data-tab="all" data-tip="暫緩已逾期，或該啟案卻還沒啟案">待你拍板 <b>${k.decide}</b></button><button type="button" class="linkb" data-calc="kpi">這些數字怎麼算？</button></div>
+  </section>
   ${aiAlertPanel()}${aiPanel('daily', 3)}
-  ${healthStrip(A)}
-  <section class="kpis">
-    ${kp(k.overdue, '逾期項目', `嚴重（超過 ${CONFIG.rules.overdueSevere} 天）${k.severe} 項`, 'all', 'overdue')}
-    ${kp(k.review, '等你審核', k.review ? `最久約 ${k.oldestReview} 天` : '沒有積壓', 'review', 'review')}
-    ${kp(k.upcoming, `${CONFIG.rules.upcomingDays} 天內到期`, k.upcoming ? '點開看清單' : '無', 'upcoming', 'upcoming')}
-    ${kp(k.silent, '靜默風險', `高風險 ${k.silentHigh} 項`, 'silent', 'silent')}
-    ${kp(k.decide, '待你拍板', '暫緩逾期／該啟案未啟案', 'all', 'decide')}
-  </section>
-  ${(ST.hist || []).length < 2 && !S.demo ? '<div class="note" style="margin:-6px 0 12px">指標旁的迷你趨勢線，會隨著你每天開啟頁面逐漸累積（只存在這台瀏覽器）。</div>' : ''}
   <section class="grid2">
-    <div class="card"><h2>需要你決策 <small>${A.decisions.length} 條，依緊急度排序</small></h2>
+    <div class="card"><h2>需要你決策 <small>${A.decisions.length} 條</small>${calc('decide')}</h2>
       ${decShown.length ? decShown.map(decRow).join('') : '<div class="empty">目前沒有。</div>'}
-      ${A.decisions.length > CONFIG.rules.maxDecisions ? `<div class="row"><button class="btn small" data-act="toggleDec">${ST.showAllDec ? '收合' : '顯示全部 ' + A.decisions.length + ' 條'}</button></div>` : ''}
+      ${A.decisions.length > CONFIG.rules.maxDecisions ? `<div class="row"><button class="btn small" data-act="toggleDec">${ST.showAllDec ? '收合' : '看全部 ' + A.decisions.length + ' 條'}</button></div>` : ''}
     </div>
-    <div style="display:grid;gap:14px;align-content:start">
-      <div class="card"><h2>各人負載 <small>進行中＋審核中</small></h2>${loadChart(A)}</div>
-      <div class="card"><h2>逾期分級 <small>以預計結束日計</small></h2>${bandChart(A)}</div>
+    <div style="display:grid;gap:16px;align-content:start">
+      <div class="card"><h2>各人負載 <small>指數 0–10</small>${calc('load')}</h2>${loadChart(A)}</div>
+      <div class="card"><h2>逾期分級${calc('bands')}</h2>${bandChart(A)}</div>
     </div>
   </section>
+  ${forecastCard(A)}
+  ${healthStrip(A)}
   <section class="card">
     <div class="tabs" role="tablist">
       ${[['review', `等你審核 ${k.review}`], ['silent', `靜默風險 ${k.silent}`], ['upcoming', `即將到期 ${k.upcoming}`], ['all', `全部進行中 ${k.active}`]].map(([id, t]) => `<button class="tab" role="tab" aria-selected="${ST.tab === id}" data-act="tab" data-tab="${id}">${t}</button>`).join('')}
@@ -971,15 +1298,121 @@ function render(){
 
 /* ───────── AI 排程產出（畫面）：Claude 排程任務寫到 monday，這裡自動顯示最新一則，不用按任何按鈕 ───────── */
 const AI_TITLE = { daily:'AI 晨報', alert:'AI 到期預警', silent:'AI 靜默風險週報', meeting:'AI 週會摘要', gm:'AI 總經理摘要' };
-function aiPanel(kind, maxAgeDays){
+/* ── 計算方式說明：每個有計算或權重的指標，旁邊的「?」點開就看得到算法（文字與程式使用同一組設定值）── */
+function calcDocs(){
+  const R = CONFIG.rules, H = CONFIG.health, L = CONFIG.statusLabels, cap = R.loadCapacity;
+  return [
+    { k:'kpi', g:'首頁', t:'首頁的數字', b:[
+      `<b>逾期項目</b>：進行中（不含「${L.notStarted}」）且已超過預計時程結束日的項目。超過 ${R.overdueSevere} 天＝嚴重。`,
+      `<b>等你審核</b>：狀態為「${L.review}」的項目。「最久約 N 天」從完成日期起算（沒填就用預計結束日或最後活動日），是估計值。`,
+      `<b>${R.upcomingDays} 天內到期</b>：未來 ${R.upcomingDays} 天內到期，且不是「${L.paused}」或「${L.notStarted}」。`,
+      `<b>待你拍板</b>：「${L.paused}」且已逾期，或已過原訂啟案日仍「${L.notStarted}」。`,
+      '<b>▲▼ 較上次</b>：與這台電腦上一次（前一天或更早）記下的數字相比。逾期、等審核變多標紅，變少標綠。',
+      '<b>迷你趨勢線</b>：每天第一次載入記一筆，只存在這台瀏覽器。'] },
+    { k:'decide', g:'首頁', t:'需要你決策（列入與排序）', b:[
+      `列入條件：①「${L.paused}」且已逾期（超過 ${R.overdueSevere} 天＝嚴重，否則中度）　②已過啟案日仍未啟案（晚超過 30 天＝中度，否則留意）　③執行中且逾期超過 ${R.overdueSevere} 天（嚴重）　④高優先（綜合分數 &gt; 5）且逾期 ${R.overdueMild + 1}–${R.overdueSevere} 天（中度）　⑤靜默高風險（中度）　⑥3 天內到期且 ${R.preDueNoUpdateDays} 天以上沒更新（留意）。`,
+      '審核積壓合併成一條：最久超過 30 天＝嚴重，5 項以上＝中度，否則留意。',
+      '排序分數＝嚴重 300／中度 200／留意 100，再加上相關天數（最多 +99）；審核積壓固定 450 分。分數高的排前面。'] },
+    { k:'bands', g:'首頁', t:'逾期分級', b:[`以預計時程結束日計算，「${L.notStarted}」不計。輕度＝逾期 1–${R.overdueMild} 天；中度＝${R.overdueMild + 1}–${R.overdueSevere} 天；嚴重＝超過 ${R.overdueSevere} 天。`] },
+    { k:'silent', g:'首頁', t:'靜默風險（沒動靜）', b:[
+      '<b>最後活動日</b>＝建立日、已開始的預計開始日、有效的「最近更新日期」、留言日期當中最晚的一天。不用 monday 的系統更新時間，因為自動化每天都會改動它。',
+      `只看「執行中」且距到期 ${R.staleDueWithin} 天內的項目：沒動靜 ≥ ${R.staleDays} 天且 ${R.staleDays} 天內到期＝<b>高</b>；沒動靜 ≥ ${R.staleDays} 天、到期還有 31–${R.staleDueWithin} 天＝<b>中</b>；沒動靜 ${R.watchDays}–${R.staleDays - 1} 天＝<b>觀察</b>。`,
+      `名稱含「${esc(R.ignoreNameRegex)}」的項目不判斷。`] },
+    { k:'load', g:'團隊', t:'負載指數（0–10）', b:[
+      '<b>每件分數</b>＝綜合分數 × 規模 × 跨系統 × 時間壓力 × 狀態',
+      '・綜合分數＝重要程度 × 即時性（高 3、中 2、低 1；與 monday「綜合分數」欄同算法，1–9）。沒填以 4（中×中）計。',
+      '・規模（預計時程長短，代表工作量／難度）：≤ 7 天 ×0.8｜8–30 天 ×1.0｜31–90 天 ×1.2｜更長 ×1.4。',
+      '・跨系統：系統類別每多一個 +15%（最多 ×1.45）。',
+      '・時間壓力：7 天內到期或已逾期 ×1.25。',
+      `・狀態：執行中／退回 ×1；「${L.review}」×0.25（在等主管，不算他的工作量）；「${L.paused}」「${L.notStarted}」不計。`,
+      `<b>指數</b>＝每件分數加總 ÷ ${cap / 10}（${cap} 分＝10，超過顯示 10+）。≥ ${R.loadIndexWarn} 視為偏高。`,
+      '例：重要「高」×即時「中」＝6，預計 20 天、單一系統、不急 → 6 分，貢獻指數 ' + r1(6 / cap * 10) + '。',
+      'monday 沒有「難易度」欄，所以用預計時程長短與跨系統數代替；若之後看板新增難易度欄，可直接改成乘上難易度。'] },
+    { k:'health', g:'團隊', t:'團隊健康燈號', b:[
+      `只看負責人自己能掌控的事；項目全在等主管審核的人會註明「不是他的問題」。`,
+      `<b>紅</b>：有嚴重逾期，或逾期 ≥ ${H.redOverdueCount} 項，或靜默高風險 ≥ ${H.redSilentCount} 項。<b>黃</b>：有任何逾期、靜默、暫緩逾期或負載偏高。<b>綠</b>：以上都沒有。`] },
+    { k:'forecast', g:'預警', t:'可能逾期（預測式預警）', b:[
+      `範圍：未來 ${R.forecastDays} 天內到期、還沒逾期、不是「${L.notStarted}」的項目。用規則打分數，<b>不是 AI 猜測</b>。`,
+      `計分：「${L.paused}」+3；執行中且 ${R.staleDays} 天以上沒更新 +3（${R.watchDays}–${R.staleDays - 1} 天 +2）；預計時程已用 ≥ 80% 且 3 天以上沒更新 +2；還在審核中 +1；負責人負載偏高且中高優先、7 天內到期 +1。`,
+      '總分 ≥ 3 就列入，並寫出每一條理由。預警後的結果（準時完成或仍逾期）在「成效」頁追蹤。'] },
+    { k:'ontime', g:'時效', t:'準時率：團隊準時交件 vs 整體準時結案', b:[
+      '拆成兩個，用來分辨時間卡在<b>團隊</b>還是<b>主管審核</b>：',
+      '<b>團隊準時交件</b>＝「完成日期」≤ 預計時程結束日的比例。看團隊有沒有在期限內完成並交件。範圍包含已結案與目前送審中的項目。',
+      '<b>整體準時結案</b>（含主管審核）＝「主管審核日期」≤ 預計時程結束日的比例。看整件事（含主管審核、歸檔）有沒有在期限內真正結束。',
+      '兩者的<b>差距</b>就是審核造成的延遲：交件準時、結案不準時＝卡在「交件到結案」這段（可能是審核慢，也可能是排程沒留審核時間，見「持續改善」的「卡在哪裡」）；兩者都低＝卡在執行。',
+      '注意：如果「預計時程」只排到團隊完成、沒有預留審核時間，結案準時率天生會偏低。這時它反映的是「排程沒有把審核算進去」，可考慮在排程時預留審核天數。',
+      '期間：近 30 天（團隊準時看完成日期落在期間內、結案準時看主管審核日期落在期間內），與前 30 天比較。沒有預計時程的項目不計入。',
+      '卡片下方的「交件 25 件，15 件準時」就是這個比例的分母與分子；少於 5 件會標「件數少」。'] },
+    { k:'delay', g:'時效', t:'結案沒準時，卡在哪裡？', b:[
+      '範圍：近 90 天內「主管審核日期」（結案）落在期間內、且有預計時程的項目。結案日晚於預計完成日＝結案沒準時。',
+      '依日期分三類，用來區分責任，<b>不全是主管的問題</b>：',
+      '<b>團隊階段已逾期</b>＝「完成日期」就已經晚於預計完成日（還沒送審就超過）。細項看負責人填的「✏️逾期原因」，例如需求變更、等待其他單位、資源不足。',
+      '<b>到期日當天才交件</b>＝完成日期剛好等於預計完成日，沒有留時間給審核，審核再快也會超過。這代表<b>排程沒有預留審核時間</b>。',
+      '<b>審核期間超過</b>＝團隊提前交件，但審核期間超過了預計完成日。細項看主管填的「✏️審核等待原因」，例如排隊待審、跨單位確認、待外部回覆。',
+      '「未標示」＝當時還沒有原因欄位，或沒有填。這兩個欄位是 2026-11-25 新增的，之後結案的項目會越來越完整。'] },
+    { k:'exec', g:'時效', t:'團隊執行天數', b:[
+      '取代原本的「交付週期」。原本是從「建立項目」算到「完成日期」，會把排隊、尚未開始的時間也算進去，不容易解讀。',
+      '<b>執行天數</b>＝「實際執行」欄位的開始到完成，計算其中的<b>工作天</b>（排除週六日、含頭尾兩天），與 monday「花費工作天數」欄的算法相同。',
+      '取<b>中位數</b>（排在正中間的那一件），不會被少數特別長的專案拉高。代表團隊實際動手做一件事，通常要幾個工作天。',
+      '每件工作大小不同，這個數字適合看<b>趨勢</b>（有沒有變快），不適合當成目標。'] },
+    { k:'review', g:'時效', t:'主管審核天數', b:[
+      '<b>主管審核天數</b>＝從「完成日期」（團隊交件）到「主管審核日期」（審核完成、歸檔）之間<b>經過的工作天</b>。當天審完＝0。',
+      '每月的數字是<b>該月審核完成</b>的項目取<b>中位數</b>；滑鼠移到表格數字上可看平均數與樣本數。中位數不會被少數拖很久的案子拉高，平均數則會反映這些極端值。',
+      '直接取自 monday 欄位，可以回溯所有歷史資料。',
+      '限制：若同仁晚填完成日期，或主管審核日期是事後補填，天數會偏短或偏長。目前還在等審核的項目另外顯示「最久已等幾天」（從完成日期算到今天）。'] },
+    { k:'reason', g:'時效', t:'審核等待原因', b:[
+      '來自 monday「✏️審核等待原因」欄：主管審核中、尚未簽核時，由主管選擇目前卡在哪裡，讓負責人知道。',
+      '<b>排隊待審</b>＝已送審、主管還沒開始看（送審時自動帶入）；<b>資料驗證中、跨單位確認中、測試／試行中、待上級／會議決議、待外部回覆</b>＝審核進行中但在等某件事；<b>待補充說明</b>＝需要負責人補資料（不退件）。',
+      '自動化：主管改原因時會通知負責人；審核完成或退回時自動清空。沒有選原因的項目顯示「未標示」。',
+      '<b>各原因平均停留</b>＝近 90 天內，從選了某個原因到改成別的原因（或清空）的天數平均；目前仍是該原因的算到今天。只計算有看到起點的紀錄。',
+      '「排隊超過 5 天」＝原因仍是排隊待審、且已等待超過 5 天（從完成日期算起）的項目，代表主管還沒開始處理。'] },
+    { k:'stages', g:'時效', t:'流程時效（各階段停留）', b:[
+      '近 90 天內，每次「進入某個狀態」到「離開」的天數，求平均（天／次）；目前還在該狀態的算到今天。',
+      '只計算有看到進入時間的停留，避免視窗開始前就在該狀態的項目失真。',
+      `<b>審核佔流程時間</b>＝「${L.review}」停留總天數 ÷（執行中＋審核中＋退回）停留總天數。審核是<b>等待</b>時間，不是處理時間。`] },
+    { k:'dq', g:'時效', t:'資料品質', b:['<b>重點事項近 14 天有更新</b>：進行中項目裡，「重點事項」欄位最後修改日在 14 天內的比例。', '<b>有預計時程</b>：進行中項目裡，有填預計時程結束日的比例。資料越完整，各項時效數字越可信。'] },
+    { k:'improve', g:'時效', t:'持續改善（近 4 個月趨勢）', b:[
+      '每月的「準時交件」「執行天數」依完成日期歸月；「準時結案」「審核天數」依主管審核日期歸月。計算方式同「數據管理」各指標，全部取自 monday 欄位，不需手動輸入。',
+      '最後一列「幾月以來」＝最新一個月減去最早一個月：準時率變高、天數變少標綠色，反之標紅色。',
+      '＊＝當月樣本少於 3 件，波動大，僅供參考；滑鼠移到數字上可看樣本數與平均值。'] },
+    { k:'manual', g:'成效', t:'改善專案省下的人工時間（選填）', b:[
+      'monday 沒有「工時」欄位，所以人工時間無法自動計算，需要在這裡登錄改善前後的分鐘數。',
+      '<b>每月省下小時</b>＝（改善前每件分鐘 − 改善後每件分鐘）× 每月件數 ÷ 60；<b>累計</b>＝每月省下小時 × 上線以來月數。',
+      '登錄後，總經理頁頂端的 30 秒結論會一併顯示每月省下的時數。'] },
+    { k:'gmrisk', g:'時效', t:'專案燈號（總經理頁）', b:[
+      `計畫性專案（計畫性群組或「季目標」）逐項判斷：<b>需關注</b>＝暫緩且逾期、執行中逾期超過 ${R.overdueSevere} 天、或靜默高風險；<b>留意</b>＝暫緩中、有逾期、靜默中或觀察、已過啟案日未啟案；其餘＝正常。`,
+      '<b>整體燈號</b>：需關注 ≥ 2 項或佔 25% 以上＝紅；有 1 項需關注或留意佔 30% 以上＝黃；其餘＝綠。'] },
+    { k:'impact', g:'成效', t:'成效頁的數字', b:[
+      '<b>估計省下時間</b>＝（以前每天查 monday 分鐘 − 現在每天分鐘）× 起算日以來的工作天數 ÷ 60。分鐘數是你自己填的估計，不是系統量測。',
+      '<b>晨報自動產出</b>＝monday 輸出看板上「AI 晨報」有發佈的天數；連續＝從最近一天往回連續的工作日。',
+      '<b>AI 發現事項</b>＝曾被列入「需要你決策」或審核超過 30 天的項目；<b>已解決</b>＝之後不再被列入（已更新、重排或結案）。',
+      '<b>催辦回應率</b>＝催辦後有新動靜或已結案的項目 ÷（有回應＋7 天仍無回應），追蹤中的不計。按「複製草稿」才算一次催辦。',
+      '<b>預警後準時完成</b>＝曾被列入「可能逾期」的項目中，在到期日前結案的比例。',
+      '以上紀錄只存在這台瀏覽器，可在成效頁匯出備份。'] },
+    { k:'flowWeekly', g:'其他', t:'每週新增 vs 完成', b:[`新增＝依建立日；完成＝依完成日期。依已載入的資料計算（進行中項目＋最近結案的 ${CONFIG.weekly.doneFetchLimit} 筆）。`] },
+    { k:'reviewEst', g:'其他', t:'等你審核的時間（估計）', b:[`目前在「${L.review}」的項目，從完成日期（沒填就用預計結束日或最後活動日）算到今天。看板沒有「送審時間」，所以是估計值；真實的審核等待請看總經理頁。`] },
+  ];
+}
+const calc = k => `<button type="button" class="hint calc" data-calc="${k}" aria-label="計算方式" data-tip="點一下看計算方式">?</button>`;
+function openCalc(k){
+  const D = calcDocs(), sel = D.find(x => x.k === k), sec = x => `<ul>${x.b.map(l => `<li>${l}</li>`).join('')}</ul>`;
+  const groups = [...new Set(D.map(x => x.g))];
+  $('#calcBody').innerHTML = `<h3>計算方式說明</h3>
+    ${sel ? `<section class="calc-sel"><h4>${esc(sel.t)}</h4>${sec(sel)}</section>` : '<div class="note">每個有計算或權重的數字都列在下面，點標題展開。設定值（天數、門檻）可由管理者調整，這裡會自動顯示目前使用的數值。</div>'}
+    ${groups.map(g => `<section><h4 class="calc-g">${esc(g)}</h4>${D.filter(x => x.g === g && x !== sel).map(x => `<details class="calc-d"><summary>${esc(x.t)}</summary>${sec(x)}</details>`).join('')}</section>`).join('')}`;
+  const dl = $('#calcDlg'); if (!dl.open) dl.showModal(); dl.scrollTop = 0;
+}
+function hint(t){ return `<span class="hint" tabindex="0" role="img" aria-label="${esc(t)}" data-tip="${esc(t)}">?</span>`; }   // 把「口徑說明」收進問號，標題旁不放長句
+function aiPanel(kind, maxAgeDays){                              // 預設收合成一行（標題＋摘要），點開才看詳細內容
   const o = (ST.ai || {})[kind], T = AI_TITLE[kind];
-  if (!o) return `<section class="card aip"><h2>🤖 ${T} <small>由 Claude 排程自動產生</small></h2><div class="note">還沒有內容。排程任務執行後，結果會自動顯示在這裡（設定方式見 README「主動提醒」）。</div></section>`;
-  const age = diffDays(toTpeDate(o.at), todayStr()), when = new Date(o.at).toLocaleString('zh-TW', { hour12:false, timeZone:CONFIG.timezone });
+  if (!o && kind !== 'daily') return '';                         // 沒有內容的面板不佔版面（只有晨報保留一行說明）
+  if (!o) return `<section class="card aip"><div class="aip-t">${T}</div><div class="note" style="margin:2px 0 0">還沒有內容。排程任務執行後會自動顯示在這裡（設定方式見 README「主動提醒」）。</div></section>`;
+  const age = diffDays(toTpeDate(o.at), todayStr()), when = new Date(o.at).toLocaleString('zh-TW', { hour12:false, timeZone:CONFIG.timezone, month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' });
   const lines = o.text.split('\n'); lines.shift();
   const parts = lines.join('\n').trim().split(/\n\s*\n/), sum = parts.shift() || '', body = parts.join('\n\n').trim();
-  return `<section class="card aip"><h2>🤖 ${T} <small>${esc(when)}${age > maxAgeDays ? ` ｜ <span class="sn">⚠ 已 ${age} 天沒有新內容，請確認排程是否正常</span>` : ''}</small></h2>
-    <div class="aip-sum">${esc(sum)}</div>
-    ${body ? `<details ${body.length < 700 ? 'open' : ''}><summary>${body.length < 700 ? '詳細內容' : '展開完整內容'}</summary><div class="out">${md(body)}</div></details>` : ''}</section>`;
+  const stale = age > maxAgeDays;
+  return `<details class="card aip${stale ? ' stale-w' : ''}"><summary><span class="aip-t">${T}</span><span class="aip-sum">${esc(sum)}</span><span class="aip-w">${stale ? `<span class="sn">⚠ ${age} 天沒更新</span> ` : ''}${esc(when)} ▾</span></summary>
+    <div class="out"><div class="ai-call" style="margin-top:12px">${inl(sum)}</div>${body ? (richAI(body) || md(body)) : ''}${stale ? '<div class="note">這則內容已經過期，請確認排程任務是否正常執行。</div>' : ''}</div></details>`;
 }
 function aiAlertPanel(){                                        // 預警只在當天有發時顯示，沒事不佔版面
   const o = (ST.ai || {}).alert; return o && diffDays(toTpeDate(o.at), todayStr()) <= 0 ? aiPanel('alert', 1) : '';
@@ -990,13 +1423,20 @@ const LV = { crit:['●', '需關注', 'crit'], warn:['◐', '留意', 'warn'], 
 const lvChip = l => `<span class="chip ${LV[l][2]}">${LV[l][0]} ${LV[l][1]}</span>`;
 const lvRank = { crit:0, warn:1, ok:2 };
 
+function forecastCard(A){                                          // 預測式預警：還沒逾期，但依現況可能趕不上
+  const F = A.forecast, show = ST.showAllFc ? F : F.slice(0, 4), days = CONFIG.rules.forecastDays;
+  return `<section class="card" style="margin-bottom:16px"><h2>可能逾期 <small>未來 ${days} 天・${F.length} 項</small>${calc('forecast')}</h2>
+    ${show.length ? show.map(f => `<div class="dec"><div><span class="chip warn">${f.item.dueIn === 0 ? '今天' : f.item.dueIn + ' 天後'}</span></div><div><div class="h">${link(f.item)}</div><div class="m">${esc(f.why.join('、'))}</div><div class="m2">${esc(shortName(f.item.owner))}・${esc(f.item.status)}・到期 ${esc(f.item.end)}</div></div>
+      <div>${f.item.isManager ? '<span class="chip neutral">你自己的項目</span>' : `<button class="btn small" data-act="nudge" data-id="${esc(f.item.id)}">催辦草稿</button>`}</div></div>`).join('') : `<div class="empty">未來 ${days} 天沒有明顯會逾期的項目。</div>`}
+    ${F.length > 4 ? `<div class="row"><button class="btn small" data-act="toggleFc">${ST.showAllFc ? '收合' : '看全部 ' + F.length + ' 項'}</button></div>` : ''}</section>`;
+}
 function healthStrip(A){                                         // 儀表板頂端：每位同仁一格燈號
   const H = ownerHealth(A).sort((a, b) => lvRank[a.level] - lvRank[b.level] || b.counts.work - a.counts.work);
-  return `<section class="card" style="margin-bottom:14px"><h2>團隊健康燈號 <small>看各人自己能掌控的逾期、靜默、負載；點名字看他的週報</small></h2>
-    <div class="hs">${H.map(h => `<button class="hs-t ${h.level}" data-act="hsOwner" data-owner="${esc(h.owner)}" data-tip="${esc(h.why.join('、') || '沒有異常')}">
+  const line = h => h.waiting ? '全部在等你審核' : [h.counts.overdue ? `<i>逾期 ${h.counts.overdue}</i>` : '', h.counts.silent ? `靜默 ${h.counts.silent}` : '', h.counts.review ? `等審 ${h.counts.review}` : ''].filter(Boolean).join('・') || '沒有異常';
+  return `<section class="card" style="margin-bottom:16px"><h2>團隊健康燈號${calc('health')}</h2>
+    <div class="hs">${H.map(h => `<button class="hs-t ${h.level}" data-act="hsOwner" data-owner="${esc(h.owner)}" data-tip="${esc((h.waiting ? '全部在等你審核，不是他的問題' : h.why.join('、')) || '沒有異常')}（進行中 ${h.counts.work} 項）">
       <div class="hs-n">${lvChip(h.level)} <b>${esc(shortName(h.owner))}</b></div>
-      <div class="hs-m">進行 ${h.counts.work}｜逾期 ${h.counts.overdue}｜靜默 ${h.counts.silent}｜等審 ${h.counts.review}</div>
-      ${h.waiting ? '<div class="hs-w">▸ 全部在等你審核，不是他的問題</div>' : `<div class="hs-w">${esc(h.why.slice(0, 2).join('、') || '沒有異常')}</div>`}</button>`).join('')}</div></section>`;
+      <div class="hs-m">${line(h)}</div></button>`).join('')}</div></section>`;
 }
 function spark(key){                                             // KPI 迷你趨勢線（每日一筆，累積在這台瀏覽器）
   const h = ST.hist || []; if (h.length < 2) return '';
@@ -1004,9 +1444,10 @@ function spark(key){                                             // KPI 迷你�
   const pts = v.map((y, k) => `${(k / (v.length - 1) * (W - 4) + 2).toFixed(1)},${(Hh - 3 - (mx === mn ? (Hh - 6) / 2 : (y - mn) / (mx - mn) * (Hh - 6))).toFixed(1)}`).join(' ');
   return `<svg class="spark" viewBox="0 0 ${W} ${Hh}" width="${W}" height="${Hh}" data-tip="近 ${v.length} 天紀錄：${v[0]} → ${v[v.length - 1]}"><polyline points="${pts}" fill="none" stroke="var(--s1)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 }
-function heatCell(n, max){
-  const p = n ? Math.round(n / max * 50) + 8 : 0;
-  return `<td class="num heat" style="background:${n ? `color-mix(in srgb, var(--s1) ${p}%, transparent)` : 'transparent'}">${n || '·'}</td>`;
+const HEAT_C = { work:'--s1', overdue:'--crit', silent:'--serious', review:'--warn', soon:'--warn', held:'--s3' };   // 顏色依欄位語意：需要處理的欄位用警示色，一般欄位用中性藍灰
+function heatCell(n, max, key){
+  const p = n ? Math.round(n / max * 45) + 10 : 0;
+  return `<td class="num heat" style="background:${n ? `color-mix(in srgb, var(${HEAT_C[key] || '--s1'}) ${p}%, transparent)` : 'transparent'}">${n || '·'}</td>`;
 }
 function flowInsight(F, reviewN){
   const r = F.recent3;
@@ -1052,30 +1493,35 @@ function renderViz(main){
   const cols = [['work', '進行中'], ['overdue', '逾期'], ['silent', '靜默'], ['review', '等你審'], ['soon', `${CONFIG.rules.upcomingDays} 天內到期`], ['held', '暫緩／未啟案']], mx = {};
   cols.forEach(([k]) => mx[k] = Math.max(1, ...H.map(h => h.counts[k])));
   const g = ganttModel(A, { past:CONFIG.viz.ganttPastDays, future:V.future, showHeld:V.showHeld, showReview:V.showReview, owner:V.owner });
+  if (V.onlyRisk) {                                               // 預設只畫有風險的項目（逾期、靜默、等審核），其餘用核取方塊展開
+    g.groups = g.groups.map(gr => ({ ...gr, rows: gr.rows.filter(r => r.od || r.cat === 'silent' || r.cat === 'review') })).filter(gr => gr.rows.length);
+    g.count = g.groups.reduce((n, gr) => n + gr.rows.length, 0);
+  }
   const rv = A.review.slice(0, 15), mxw = Math.max(1, ...rv.map(i => i.reviewWait));
   main.innerHTML = `
-  <section class="card"><h2>團隊狀態矩陣 <small>顏色越深＝數量越多；先看燈號，再看哪一欄偏高</small></h2>
+  <section class="card"><h2>團隊狀態矩陣${hint('顏色越深＝數量越多；先看燈號，再看哪一欄偏高')}</h2>
     <div class="tw"><table class="heat-t"><thead><tr><th>負責人</th><th>燈號</th>${cols.map(c => `<th class="num">${c[1]}</th>`).join('')}</tr></thead>
-    <tbody>${H.map(h => `<tr><td><b>${esc(shortName(h.owner))}</b>${h.waiting ? ' <span class="note">全在等審</span>' : ''}</td><td>${lvChip(h.level)}</td>${cols.map(([k]) => heatCell(h.counts[k], mx[k])).join('')}</tr>`).join('')}</tbody></table></div></section>
+    <tbody>${H.map(h => `<tr><td><b>${esc(shortName(h.owner))}</b>${h.waiting ? ' <span class="note">全在等審</span>' : ''}</td><td>${lvChip(h.level)}</td>${cols.map(([k]) => heatCell(h.counts[k], mx[k], k)).join('')}</tr>`).join('')}</tbody></table></div></section>
 
-  <section class="card" style="margin-top:14px"><h2>時程甘特圖 <small>${g.count} 項｜${mmdd(g.left)} ～ ${mmdd(g.right)}</small></h2>
-    <div class="row"><label>未來範圍 <select id="vzFuture">${CONFIG.viz.ganttFutureChoices.map(n => `<option value="${n}" ${n === V.future ? 'selected' : ''}>${Math.round(n / 30)} 個月</option>`).join('')}</select></label>
+  <section class="card" style="margin-top:16px"><h2>時程甘特圖 <small>${g.count} 項｜${mmdd(g.left)} ～ ${mmdd(g.right)}</small></h2>
+    <div class="row"><label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vzRisk" ${V.onlyRisk ? 'checked' : ''}> 只看有風險的</label>
+      <label>未來範圍 <select id="vzFuture">${CONFIG.viz.ganttFutureChoices.map(n => `<option value="${n}" ${n === V.future ? 'selected' : ''}>${Math.round(n / 30)} 個月</option>`).join('')}</select></label>
       <label>負責人 <select id="vzOwner"><option value="">全部</option>${A.load.map(o => `<option value="${esc(o.owner)}" ${V.owner === o.owner ? 'selected' : ''}>${esc(shortName(o.owner))}</option>`).join('')}</select></label>
       <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vzReview" ${V.showReview ? 'checked' : ''}> 含等審核</label>
       <label style="display:flex;gap:6px;align-items:center"><input type="checkbox" id="vzHeld" ${V.showHeld ? 'checked' : ''}> 含暫緩／未啟案</label></div>
     ${ganttHtml(g, A)}</section>
 
   <section class="grid2" style="margin-top:14px">
-    <div class="card"><h2>每週新增 vs 完成 <small>近 ${CONFIG.viz.flowWeeks} 週</small></h2>
+    <div class="card"><h2>每週新增 vs 完成 <small>近 ${CONFIG.viz.flowWeeks} 週</small>${calc('flowWeekly')}</h2>
       <div class="insight">${esc(flowInsight(F, A.review.length))}</div>${flowSvg(F)}
       <div class="legend"><span><i style="background:var(--s1)"></i>新增（建立日）</span><span><i style="background:var(--s4)"></i>完成（完成日期）</span></div>
-      <div class="note">依已載入的資料計算：最近完成的 ${CONFIG.weekly.doneFetchLimit} 筆＋進行中項目。</div></div>
+</div>
     <div style="display:grid;gap:14px;align-content:start">
       <div class="card"><h2>工作類型分佈 <small>${D.total} 項進行中</small></h2>${distBars(D.type)}</div>
-      <div class="card"><h2>系統別分佈 <small>一個項目可屬多個系統</small></h2>${distBars(D.sys)}</div></div>
+      <div class="card"><h2>系統別分佈${hint('一個項目可屬多個系統')}</h2>${distBars(D.sys)}</div></div>
   </section>
 
-  <section class="card" style="margin-top:14px"><h2>等你審核的時間 <small>${A.review.length} 項；看板沒有送審時間，以完成日／到期日估算</small></h2>
+  <section class="card" style="margin-top:16px"><h2>等你審核的時間 <small>${A.review.length} 項</small>${calc('reviewEst')}</h2>
     ${rv.length ? `<div class="bars">${rv.map(i => { const col = i.reviewWait > 30 ? '--crit' : i.reviewWait > 14 ? '--serious' : '--warn', gl = i.reviewWait > 30 ? '●' : i.reviewWait > 14 ? '◐' : '○';
       return `<div class="brow" style="grid-template-columns:minmax(120px,240px) 1fr 62px"><div class="nm" title="${esc(i.name)}">${esc(shortName(i.owner))}｜${esc(i.name)}</div><div class="track"><div class="seg" style="width:${Math.max(1, i.reviewWait / mxw * 100).toFixed(1)}%;background:var(${col})" data-tip="${esc(i.name + '：約等待 ' + i.reviewWait + ' 天')}"></div></div><div class="val">${gl} ${i.reviewWait} 天</div></div>`; }).join('')}</div>
       <div class="legend"><span>● 超過 30 天</span><span>◐ 15–30 天</span><span>○ 14 天內</span></div>${A.review.length > 15 ? `<div class="note">只顯示等最久的 15 項。</div>` : ''}` : '<div class="empty">目前沒有等你審核的項目。</div>'}</section>`;
@@ -1091,30 +1537,71 @@ function gmCard(i){
 }
 function renderGM(main){
   const G = gmModel(ST.A, ST.items, ST.done || [], ST.A.today); WKG = G;
-  const aiOn = aiReady(), F = G.flow, risk = G.scope.filter(i => i.risk.level !== 'ok');
-  const kp = (n, l, d) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div><div class="d">${d}</div></div>`;
+  const aiOn = aiReady(), risk = G.scope.filter(i => i.risk.level !== 'ok');
+  const FL = flowData(), T = timeModel(ST.done || [], ST.A, G.today, FL), IM = improveStats(), X = impactStats(), tg = targetsNow(), AU = improveAuto(ST.done || [], G.today, ST.A);
+  G.time = T; G.impv = IM; G.tg = tg; G.auto = AU; G.delay = delayModel(ST.done || [], G.today);                            // 讓「複製摘要」「AI 撰寫摘要」也帶到時效數字
   const ask = i => i.status === CONFIG.statusLabels.paused ? '建議處置：續做、重排或作廢' : i.overdue > CONFIG.rules.overdueSevere ? '建議處置：重排時程或結案' : i.silent ? '建議處置：由主管向負責人確認進度' : i.status === CONFIG.statusLabels.notStarted ? '建議處置：確認啟案時間' : '持續追蹤';
   main.innerHTML = `
-  <section class="card gm-top"><div class="row" style="justify-content:space-between"><div><div class="k">給總經理的進度摘要｜${esc(G.today)}</div>
-      <div class="gm-t">${lvChip(G.level)} 計畫性專案 ${G.n} 項：${G.c.crit} 項需關注、${G.c.warn} 項留意、${G.c.ok} 項正常</div></div>
+  <section class="card gm-top"><div class="row" style="justify-content:space-between;align-items:flex-start"><div style="flex:1;min-width:260px"><div class="k">30 秒結論｜給總經理｜${esc(G.today)}${S.demo ? '（示範數字）' : ''}</div>
+      <div class="gm-lead">${esc(gmLead(T, IM, ST.A))}</div>
+      <div class="gm-sub">${lvChip(G.level)} 計畫性專案 ${G.n} 項：${G.c.crit} 項需關注、${G.c.warn} 項留意、${G.c.ok} 項正常${calc('gmrisk')}<button type="button" class="linkb" data-calc="all">所有數字怎麼算？</button></div></div>
       <div class="row" style="margin:0"><button class="btn" data-act="gmCopy">複製摘要</button><button class="btn" data-act="wkPrint">列印</button><button class="btn" data-act="gmAI" ${aiOn ? '' : 'disabled title="尚未設定 AI 端點"'}>AI 撰寫摘要</button></div></div></section>
   ${aiPanel('gm', 8)}
   <div id="gmAIout"></div>
-  <section class="kpis" style="margin-top:14px">
-    ${kp(G.n, '計畫性專案', '納入總經理視角的專案數')}${kp(G.c.ok, '○ 正常', '無逾期、無久未更新')}${kp(G.c.warn, '◐ 留意', '逾期、久未更新或暫緩中')}${kp(G.c.crit, '● 需關注', '暫緩逾期、嚴重逾期、長期無動靜')}${kp(G.doneRecent.length, '近 14 天完成', '已結案歸檔')}
-  </section>
-  <section class="card"><h2>計畫性專案一覽 <small>依風險由高到低；時間進度＝今天落在預計時程的位置，不是工作完成度</small></h2>
-    <div class="gm-grid">${G.scope.map(gmCard).join('') || '<div class="empty">沒有符合的專案（可在 CONFIG.gm 調整納入範圍）。</div>'}</div></section>
-  <section class="grid2" style="margin-top:14px">
-    <div class="card"><h2>需要總經理知道的風險 <small>${risk.length} 項</small></h2>
-      ${risk.slice(0, 8).map(i => `<div class="dec" style="grid-template-columns:auto 1fr"><div>${lvChip(i.risk.level)}</div><div><div class="h">${link(i)}（${esc(shortName(i.owner))}）</div><div class="m">${esc(i.risk.why.join('；'))}<br>${esc(ask(i))}</div></div></div>`).join('') || '<div class="empty">目前沒有。</div>'}
-      ${risk.length > 8 ? `<div class="note">另有 ${risk.length - 8} 項，見上方專案一覽。</div>` : ''}</div>
-    <div style="display:grid;gap:14px;align-content:start">
-      <div class="card"><h2>產出趨勢 <small>每週新增 vs 完成</small></h2><div class="insight">${esc(flowInsight(F, ST.A.review.length))}</div>${flowSvg(F)}
-        <div class="legend"><span><i style="background:var(--s1)"></i>新增</span><span><i style="background:var(--s4)"></i>完成</span></div></div>
-      <div class="card"><h2>近 14 天完成</h2>${G.doneRecent.length ? G.doneRecent.map(i => `<div class="m">✔ ${esc(i.name)}（${esc(shortName(i.owner))}，${esc(mmdd(i.doneDate))}）</div>`).join('') : '<div class="empty">近 14 天沒有項目結案。</div>'}</div></div>
-  </section>
-  <section class="card" style="margin-top:14px"><h2>團隊負載 <small>進行中＋審核中</small></h2><div class="hs">${G.health.map(h => `<div class="hs-t ${h.level}" style="cursor:default"><div class="hs-n">${lvChip(h.level)} <b>${esc(shortName(h.owner))}</b></div><div class="hs-m">進行中 ${h.counts.work} 項</div></div>`).join('')}</div></section>`;
+
+  <div class="gm-quad">
+    <section class="card q q-dm"><div class="q-h"><b>數據管理</b><span>時效記分卡｜近 30 天 vs 前 30 天</span></div>
+      <div class="q-body">
+        <div class="mts four">
+          ${mtile('團隊準時交件' + calc('ontime'), T.teamOn.cur.v, '%', T.teamOn.cur.n ? `交件 ${T.teamOn.cur.n} 件，<b>${T.teamOn.cur.k}</b> 件準時${few(T.teamOn.cur.n)}` : '近 30 天沒有交件', dlt(T.teamOn.cur.v, T.teamOn.prev.v, false), goalChip(T.teamOn.cur.v, tg.teamOn, false, '%'))}
+          ${mtile('整體準時結案' + calc('ontime'), T.closeOn.cur.v, '%', T.closeOn.cur.n ? `結案 ${T.closeOn.cur.n} 件，<b>${T.closeOn.cur.k}</b> 件準時${few(T.closeOn.cur.n)}` : '近 30 天沒有結案', dlt(T.closeOn.cur.v, T.closeOn.prev.v, false), goalChip(T.closeOn.cur.v, tg.closeOn, false, '%'))}
+          ${mtile('團隊執行天數' + calc('exec'), T.exec.cur.v, ' 工作天', T.exec.cur.n ? `一半的工作 ${T.exec.cur.v} 天內做完${few(T.exec.cur.n)}` : '近 30 天沒有交件', dlt(T.exec.cur.v, T.exec.prev.v, true), speedChip(T.exec.cur.v, T.exec.prev.v))}
+          ${mtile('主管審核天數' + calc('review'), T.review.cur.v, ' 工作天', T.review.cur.n ? `一半在 ${T.review.cur.v} 天內審完${few(T.review.cur.n)}` : '近 30 天沒有審完', dlt(T.review.cur.v, T.review.prev.v, true), goalChip(T.review.cur.v, tg.review, true, ' 天'))}
+        </div>
+        <div class="q-n">${(() => { const g = T.teamOn.cur.v !== null && T.closeOn.cur.v !== null ? T.teamOn.cur.v - T.closeOn.cur.v : null, w = ST.A.review;
+          return (g !== null && g >= 10 ? `準時交件比準時結案高 <b>${g}</b> 個百分點，差在「交件到結案」這段，原因見「持續改善」。` : g !== null ? '準時交件與準時結案差距不大。' : '') + `目前 <b>${w.length}</b> 項等審核${w[0] ? `，最久已等 ${w[0].reviewWait} 天` : ''}。`; })()}</div>
+        <div class="q-n">資料品質：重點事項近 14 天有更新 <b>${T.dq.fresh}%</b>｜有預計時程 <b>${T.dq.hasEnd}%</b>${calc('dq')}</div>
+      </div>
+    </section>
+
+    <section class="card q q-ci"><div class="q-h"><b>持續改善</b><span>近 4 個月時效趨勢｜資料來源：monday</span>${calc('improve')}</div>
+      <div class="q-body">
+        ${impTrendHtml(AU)}
+        ${delayHtml(delayModel(ST.done || [], G.today))}
+      </div>
+    </section>
+
+    <section class="card q q-in"><div class="q-h"><b>創新思考</b><span>AI 與自動化的實際成效</span>${calc('impact')}</div>
+      <div class="q-body">
+        <div class="mts two">
+          <div class="mt"><div class="mt-l">AI 晨報自動產出</div><div class="mt-v">${X.runsKnown ? X.runDays : '—'}<small> 天</small></div><div class="mt-n">${X.runsKnown ? `連續 ${X.streak} 個工作天` : (S.token ? '讀取中…' : '需連線 monday')}</div></div>
+          <div class="mt"><div class="mt-l">AI 主動發現的事項</div><div class="mt-v">${X.found}<small> 項</small></div><div class="mt-n">已解決 ${X.resolved}${X.avgDays !== null ? `，平均 ${X.avgDays} 天` : ''}</div></div>
+          <div class="mt"><div class="mt-l">預警後準時完成</div><div class="mt-v">${X.fcOn + X.fcLate ? Math.round(X.fcOn / (X.fcOn + X.fcLate) * 100) : '—'}<small>${X.fcOn + X.fcLate ? ' %' : ''}</small></div><div class="mt-n">準時 ${X.fcOn}・仍逾期 ${X.fcLate}</div></div>
+          <div class="mt"><div class="mt-l">催辦後有回應</div><div class="mt-v">${X.nudgeRate !== null ? X.nudgeRate : '—'}<small>${X.nudgeRate !== null ? ' %' : ''}</small></div><div class="mt-n">催辦 ${X.nudges.length} 次・${X.nudgeItems} 項</div></div>
+        </div>
+        <div class="q-n">AI 只提供建議與草稿，由主管確認後才行動。<button class="btn small ghost" data-act="view" data-view="impact">看完整成效 →</button></div>
+      </div>
+    </section>
+
+    <section class="card q q-lv"><div class="q-h"><b>享受生活</b><span>團隊負載指數 0–10</span>${calc('load')}</div>
+      <div class="q-body">
+        ${teamHealthRows(ST.A)}
+        <div class="q-n">${(() => { const hi = ST.A.load.filter(o => o.warn); return hi.length ? `${hi.map(o => esc(shortName(o.owner))).join('、')} 負載偏高，建議分流或延後次要項目。` : '目前沒有人負載偏高。'; })()}（依項目重要度與規模加權，不含加班時數）${ST.A.load.some(o => o.allReview) ? '標示「全在等你審核」者，卡在審核，不在他。' : ''}</div>
+      </div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-bottom:16px"><h2>流程時效：時間花在哪${calc('stages')}</h2>${flowStagesHtml(FL, tg)}${reasonFlowHtml(FL)}</section>
+  <section class="card" style="margin-bottom:16px"><h2>需要總經理知道的風險 <small>${risk.length} 項</small></h2>
+    ${risk.length ? `<div class="rk" role="table" aria-label="需要總經理知道的風險">
+      <div class="rk-r rk-h" role="row"><span>等級</span><span>專案</span><span>狀況</span><span>負責人</span><span>建議處置</span><span>到期</span></div>
+      ${risk.slice(0, 10).map(i => `<div class="rk-r" role="row"><span>${lvChip(i.risk.level)}</span><span class="rk-n">${link(i)}</span><span class="rk-w">${esc(i.risk.why.join('；'))}</span><span class="rk-o">${esc(shortName(i.owner))}</span><span class="rk-a">${esc(ask(i).replace(/^建議處置：/, ''))}</span><span class="rk-d">${i.end ? esc(mmdd(i.end)) : '—'}</span></div>`).join('')}</div>` : '<div class="empty">目前沒有。</div>'}
+    ${risk.length > 10 ? `<div class="note">另有 ${risk.length - 10} 項，展開下方「專案一覽」。</div>` : ''}</section>
+  <details class="card" style="margin-bottom:16px"><summary style="cursor:pointer;font-weight:700;font-size:16px">近 14 天完成 <small style="font-weight:400;color:var(--muted);font-size:13px">${G.doneRecent.length} 項（點開）</small></summary>
+    <div style="margin-top:8px">${G.doneRecent.length ? G.doneRecent.slice(0, 10).map(i => `<div class="m" style="margin:4px 0">✔ ${esc(i.name)} <span style="color:var(--muted)">${esc(shortName(i.owner))}・${esc(mmdd(i.doneDate))}</span></div>`).join('') + (G.doneRecent.length > 10 ? `<div class="note">另有 ${G.doneRecent.length - 10} 項。</div>` : '') : '<div class="empty">近 14 天沒有項目結案。</div>'}</div></details>
+  <details class="card"><summary style="cursor:pointer;font-weight:700;font-size:16px">計畫性專案一覽 <small style="font-weight:400;color:var(--muted);font-size:13px">${G.scope.length} 項，依風險由高到低（點開）</small></summary>
+    <div class="note">時間進度＝今天落在預計時程的位置，不是工作完成度。</div>
+    <div class="gm-grid" style="margin-top:10px">${G.scope.map(gmCard).join('') || '<div class="empty">沒有符合的專案（可在 CONFIG.gm 調整納入範圍）。</div>'}</div></details>`;
 }
 function gmAI(){
   runAI('gmAIout', () => callLLM(SYS, `以下是研發文管課的進度資料。請改寫成給總經理看的簡短摘要（繁體中文，總經理沒有時間看細節）：
@@ -1139,6 +1626,17 @@ function chipDue(i){
     : i.dueIn <= CONFIG.rules.upcomingDays ? `<span class="chip warn">○ ${dueText(i)}</span>`
     : `<span class="chip neutral">${dueText(i)}</span>`;
 }
+function noteBox(i, loc, ph){                                    // 備註預設收合（已有內容、或逐人報告模式才展開），減少畫面上的空白輸入框
+  const has = !!loc.note[i.id];
+  return `<details class="wk-notebox" ${has || ST.wk.focus ? 'open' : ''}><summary>${has ? '備註' : '＋ 加備註'}</summary><textarea class="wk-note" rows="1" data-wk="note" data-id="${esc(i.id)}" placeholder="${esc(ph)}">${esc(loc.note[i.id] || '')}</textarea></details>`;
+}
+function wkLine(i, loc){                                         // 「有更新」的項目：一列精簡顯示（標題＋狀態＋重點事項前兩行）
+  const rep = !!loc.rep[i.id];
+  return `<div class="wk-line${rep ? ' reported' : ''}"><label class="wk-chk" title="已報告"><input type="checkbox" data-wk="rep" data-id="${esc(i.id)}" ${rep ? 'checked' : ''}><span class="sr">已報告</span></label>
+    <div class="wk-title" style="font-size:15px">${link(i)}</div><div class="wk-chips"><span class="chip neutral">${esc(i.status)}</span>${chipDue(i)}</div>
+    <div class="wk-kp small${i.kpEmpty ? ' empty' : ''}">${i.kpEmpty ? '（尚未填寫重點事項）' : esc(i.keyPoints.trim())}</div>
+    <div style="grid-column:2 / 4">${noteBox(i, loc, '備註／決議')}</div></div>`;
+}
 function wkItem(i, loc){
   const win = WKM.win, rep = !!loc.rep[i.id];
   const fresh = i.kpFresh
@@ -1151,15 +1649,18 @@ function wkItem(i, loc){
     <div class="wk-meta">預計 ${esc(mmdd(i.start))} ～ ${esc(mmdd(i.end))}${i.type ? ' ｜ ' + esc(i.type) : ''}${i.system ? ' ｜ ' + esc(i.system) : ''}</div>
     <div class="wk-kp${i.kpEmpty ? ' empty' : ''}">${i.kpEmpty ? '（尚未填寫重點事項）' : esc(i.keyPoints.trim())}</div>
     <div class="wk-foot">${fresh}</div>
-    <textarea class="wk-note" rows="1" data-wk="note" data-id="${esc(i.id)}" placeholder="會議備註／決議（只存在這台瀏覽器）">${esc(loc.note[i.id] || '')}</textarea></article>`;
+    ${noteBox(i, loc, '會議備註／決議（只存在這台瀏覽器）')}</article>`;
 }
 function wkOwner(o, loc){
-  const held = o.held.length ? `<details class="wk-held" open><summary>暫緩／未啟案 ${o.held.length} 項（需決議是否續做）</summary>${o.held.map(i =>
+  const held = o.held.length ? `<details class="wk-held" ${ST.wk.focus ? 'open' : ''}><summary>暫緩／未啟案 ${o.held.length} 項（需決議是否續做）</summary>${o.held.map(i =>
     `<div class="wk-mini">${link(i)} <span class="chip neutral">${esc(i.status)}</span> ${chipDue(i)}<div class="wk-kp small${i.kpEmpty ? ' empty' : ''}" style="margin-left:0">${i.kpEmpty ? '（無重點事項）' : esc(i.keyPoints.trim())}</div>
      <textarea class="wk-note" rows="1" style="margin-left:0;width:100%" data-wk="note" data-id="${esc(i.id)}" placeholder="備註／決議">${esc(loc.note[i.id] || '')}</textarea></div>`).join('')}</details>` : '';
   const done = o.done.length ? `<div class="wk-done"><b>近 ${WKM.win} 天完成 ${o.done.length} 項：</b>${o.done.map(i => `${esc(i.name)}（${mmdd(i.doneDate)}）`).join('、')}</div>` : '';
-  return `<section class="card wk-owner"><h2>${esc(shortName(o.owner))} <small>進行中 ${o.report.length} 項｜有更新 ${o.fresh}｜沒更新 ${o.stale}</small></h2>
-    ${o.report.map(i => wkItem(i, loc)).join('') || '<div class="empty">沒有進行中的項目。</div>'}${held}${done}</section>`;
+  const stale = o.report.filter(i => !i.kpFresh), fresh = o.report.filter(i => i.kpFresh);
+  const body = ST.wk.focus ? o.report.map(i => wkItem(i, loc)).join('')              // 逐人報告：全部完整展開
+    : stale.map(i => wkItem(i, loc)).join('') + (fresh.length ? `<details class="wk-fresh"><summary>有更新 ${fresh.length} 項（點開）</summary>${fresh.map(i => wkLine(i, loc)).join('')}</details>` : '');   // 一般：先看「沒更新、需追問」的
+  return `<section class="card wk-owner"><h2>${esc(shortName(o.owner))} <small>進行中 ${o.report.length} 項</small>${o.stale ? `<span class="chip warn">⚠ ${o.stale} 項沒更新</span>` : '<span class="chip okc">○ 都有更新</span>'}</h2>
+    ${body || '<div class="empty">沒有進行中的項目。</div>'}${held}${done}</section>`;
 }
 function renderWeekly(main){
   const w = ST.wk; WKM = weeklyModel(ST.items, ST.done || [], todayStr(), { win:w.win, routine:w.routine });
@@ -1170,7 +1671,7 @@ function renderWeekly(main){
   const shown = w.owner ? all.filter(o => o.owner === w.owner) : all, pos = all.findIndex(o => o.owner === w.owner), aiOn = aiReady();
   const chips = (w.focus ? '' : `<button class="tab" data-act="wkOwner" data-owner="" aria-selected="${!w.owner}">全部</button>`)
     + all.map(o => `<button class="tab" data-act="wkOwner" data-owner="${esc(o.owner)}" aria-selected="${w.owner === o.owner}">${esc(shortName(o.owner))} ${o.report.length}${o.stale ? ` <span class="sn">⚠${o.stale}</span>` : ''}</button>`).join('');
-  const kp = (n, l, d) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}</div><div class="d">${d}</div></div>`;
+  const kp = (n, l, d, tone) => `<div class="kpi tone-${n ? tone : 'ok'}"><div class="n">${n}</div><div class="l">${l}</div><div class="d">${d}</div></div>`;
   main.innerHTML = `
   <section class="card wk-bar">
     <div class="row">
@@ -1186,12 +1687,11 @@ function renderWeekly(main){
     ${w.focus ? `<div class="row"><button class="btn" data-act="wkPrev" ${pos <= 0 ? 'disabled' : ''}>← 上一位</button><b>${pos + 1} / ${all.length}</b><button class="btn" data-act="wkNext" ${pos >= all.length - 1 ? 'disabled' : ''}>下一位 →</button><span class="note">鍵盤 ← → 也可切換</span></div>` : ''}
   </section>
   <section class="kpis">
-    ${kp(t.report, '進行中項目', '每週都列出，不論有沒有更新')}
-    ${kp(t.fresh, `近 ${WKM.win} 天有更新`, '重點事項有被修改')}
-    ${kp(t.stale, '沒更新，需追問', `近 ${WKM.win} 天重點事項沒動`)}
-    ${kp(t.overdue, '已逾期', '含審核中')}
-    ${kp(t.done, `近 ${WKM.win} 天完成`, '已結案歸檔')}
+    ${kp(t.stale, '沒更新，需追問', `近 ${WKM.win} 天重點事項沒動`, 'warn')}
+    ${kp(t.overdue, '已逾期', '含審核中', 'crit')}
+    ${kp(t.report, '進行中項目', `其中 ${t.fresh} 項近 ${WKM.win} 天有更新`, 'n')}
   </section>
+  <div class="wk-sum">近 ${WKM.win} 天完成 ${t.done} 項（已結案歸檔）</div>
   ${aiPanel('meeting', 8)}${aiPanel('silent', 8)}
   <div id="wkAIout"></div>
   <div class="${w.focus ? 'wk-focus' : ''}">${shown.map(o => wkOwner(o, loc)).join('') || '<div class="card empty">沒有符合的項目。</div>'}</div>
@@ -1202,7 +1702,7 @@ function wkStep(d){
   const a = WKM.owners, k = a.findIndex(o => o.owner === ST.wk.owner), n = k + d;
   if (n < 0 || n >= a.length) return; ST.wk.owner = a[n].owner; render(); window.scrollTo(0, 0);
 }
-function setView(v){ ST.view = v; try { history.replaceState(null, '', v === 'dash' ? '#' : '#' + v); } catch {} render(); window.scrollTo(0, 0); }
+function setView(v){ ST.view = v; lsSet('cfdash.view', v); try { history.replaceState(null, '', v === 'dash' ? '#' : '#' + v); } catch {} render(); window.scrollTo(0, 0); }
 function wkAI(){
   const M = WKM, ctx = M.owners.map(o => ({ 負責人:shortName(o.owner),
     進行中:o.report.map(i => ({ 項目:i.name, 狀態:i.status, 到期:i.end, 逾期天數:i.overdue || undefined, 重點事項:i.kpEmpty ? '（空白）' : i.keyPoints.trim().slice(0, 500), 近期有更新:i.kpFresh })),
@@ -1219,25 +1719,30 @@ function decRow(d){
   if (d.kind === 'review') {
     const top3 = d.review.slice(0, 3).map(i => `${esc(i.name)}（${esc(shortName(i.owner))}，約 ${i.reviewWait} 天）`).join('、');
     return `<div class="dec"><div>${chip(d.sev)}</div><div><div class="h">${esc(d.headline)}</div>
-      <div class="m">等最久：${top3}。分佈：${Object.entries(d.dist).sort((a,b) => b[1] - a[1]).map(([o,n]) => `${esc(shortName(o))} ${n}`).join('、')}。<br>看板無法判斷是否已線下審過，待你確認。</div></div>
+      <div class="m2">${reasonLine(d.review)}</div>
+      <details><summary>等最久的項目與分佈</summary>等最久：${top3}。<br>分佈：${Object.entries(d.dist).sort((a,b) => b[1] - a[1]).map(([o,n]) => `${esc(shortName(o))} ${n}`).join('、')}。</details></div>
       <div><button class="btn small" data-act="tab" data-tab="review">看清單</button></div></div>`;
   }
   const i = d.item;
-  return `<div class="dec"><div>${chip(d.sev)}</div><div><div class="h">${link(i)}</div><div class="m">${esc(d.headline)}<br>${esc(shortName(i.owner))}｜到期 ${esc(i.end || '—')}（${dueText(i)}）｜${esc(i.status)}</div></div>
+  return `<div class="dec"><div>${chip(d.sev)}</div><div><div class="h">${link(i)}</div><div class="m">${esc(d.headline)}</div><div class="m2">${esc(shortName(i.owner))}・${esc(i.status)}・${i.end ? '到期 ' + esc(i.end) + '（' + dueText(i) + '）' : '無到期日'}</div></div>
     <div>${i.isManager ? '<span class="chip neutral">你自己的項目</span>' : `<button class="btn small" data-act="nudge" data-id="${esc(i.id)}">催辦草稿</button>`}</div></div>`;
 }
 
-function loadChart(A){
-  const max = Math.max(CONFIG.rules.loadWarn + 2, ...A.load.map(o => o.work + o.other));
+const LOAD_RULE = `負載指數＝每件分數加總 ÷ ${CONFIG.rules.loadCapacity / 10}（${CONFIG.rules.loadCapacity} 分＝10）。每件分數＝綜合分數（重要程度×即時性，1–9）× 規模（預計時程 ≤7 天 0.8｜≤30 天 1｜≤90 天 1.2｜更長 1.4）× 跨系統（每多一個系統 +15%）× 時間壓力（7 天內到期或已逾期 ×1.25）。主管審核中只算 ¼（在等你），暫緩／未啟案不計。≥ ${CONFIG.rules.loadIndexWarn} 視為偏高。`;
+const loadTip = o => `${shortName(o.owner)}：負載指數 ${o.idx}${o.over ? '（已超過上限）' : ''}／10（加權總分 ${o.pts}，${o.work} 項）。最吃重：${o.top.map(t => `${t.name}（${t.pts}）`).join('、') || '無'}`;
+function loadChart(A){                                            // 長條＝加權負載指數（0–10），依狀態拆色；不是單純數件數
+  const R = CONFIG.rules;
   const rows = A.load.map(o => {
-    const seg = (n, c, nm) => n ? `<div class="seg" style="width:${(n / max * 100).toFixed(1)}%;background:var(${c})" data-tip="${esc(shortName(o.owner))}：${nm} ${n} 項"></div>` : '';
+    const sum = (f) => A.act.filter(i => i.owner === o.owner && f(i)).reduce((n, i) => n + i.loadPts, 0) / R.loadCapacity * 10;
+    const run = Math.min(10, sum(i => !i.isReview)), rv = Math.min(10 - run, sum(i => i.isReview));
+    const seg = (v, c, nm) => v > 0.05 ? `<div class="seg" style="width:${(v * 10).toFixed(1)}%;background:var(${c})" data-tip="${esc(shortName(o.owner))}：${nm} 佔 ${r1(v)}"></div>` : '';
     return `<div class="brow"><div class="nm" title="${esc(o.owner)}">${esc(shortName(o.owner))}</div>
-      <div class="track"><div class="stack">${seg(o.running, '--s1', '執行中')}${seg(o.review, '--s2', '審核中')}${seg(o.other, '--s3', '暫緩／未啟案')}</div>
-      <div class="thresh" style="left:${(CONFIG.rules.loadWarn / max * 100).toFixed(1)}%" data-tip="偏高門檻 ${CONFIG.rules.loadWarn} 項"></div></div>
-      <div class="val">${o.work}${o.warn ? '<span class="flag" title="偏高">▲</span>' : ''}</div></div>
-      ${o.allReview ? `<div class="note" style="margin:-4px 0 0 86px;color:var(--crit)">▲ ${esc(shortName(o.owner))} 的項目全部卡在審核</div>` : ''}`;
+      <div class="track" data-tip="${esc(loadTip(o))}"><div class="stack">${seg(run, '--s1', '執行中')}${seg(rv, '--s2', '審核中')}</div>
+      <div class="thresh" style="left:${R.loadIndexWarn * 10}%" data-tip="偏高門檻：指數 ${R.loadIndexWarn}"></div></div>
+      <div class="val">${o.idx}${o.over ? '+' : ''}${o.warn ? '<span class="flag" title="偏高">▲</span>' : ''}</div></div>
+      ${o.allReview ? `<div class="note" style="margin:-4px 0 0 86px;color:var(--crit-ink)">▲ ${esc(shortName(o.owner))} 的項目全部卡在審核</div>` : ''}`;
   }).join('');
-  return `<div class="bars">${rows}</div><div class="legend"><span><i style="background:var(--s1)"></i>執行中</span><span><i style="background:var(--s2)"></i>審核中</span><span><i style="background:var(--s3)"></i>暫緩／未啟案</span><span>┆ 偏高門檻 ${CONFIG.rules.loadWarn}</span></div>`;
+  return `<div class="bars">${rows}</div><div class="legend"><span><i style="background:var(--s1)"></i>執行中</span><span><i style="background:var(--s2)"></i>審核中（只算少量）</span><span>┆ 偏高門檻 ${CONFIG.rules.loadIndexWarn}</span></div>`;
 }
 function bandChart(A){
   const b = [['嚴重', A.bands.severe.length, '--crit', `超過 ${CONFIG.rules.overdueSevere} 天`, '●'], ['中度', A.bands.mid.length, '--serious', `${CONFIG.rules.overdueMild + 1}–${CONFIG.rules.overdueSevere} 天`, '◐'], ['輕度', A.bands.mild.length, '--warn', `1–${CONFIG.rules.overdueMild} 天`, '○']];
@@ -1249,16 +1754,22 @@ function tableFor(A){
   const f = ST.filter.trim().toLowerCase();
   const match = i => !f || (i.name + i.owner).toLowerCase().includes(f);
   const th = a => '<thead><tr>' + a.map(x => `<th>${x}</th>`).join('') + '</tr></thead>';
-  const tbl = (head, rows) => rows.length ? `<table>${th(head)}<tbody>${rows.join('')}</tbody></table>` : '<div class="empty">沒有符合的項目。</div>';
-  if (ST.tab === 'review') return tbl(['項目', '負責人', '到期日', '估計已等待', '優先', ''], A.review.filter(match).map(i =>
-    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td class="num">${esc(i.end || '—')}</td><td class="num">${i.reviewWait} 天</td><td>${i.prioLabel}</td><td><button class="btn small" data-act="review" data-id="${esc(i.id)}">AI 預審</button></td></tr>`));
+  const CAP = 8;                                                  // 表格預設只列前 8 筆（有搜尋時全列），其餘按「看全部」
+  const tbl = (head, rows) => !rows.length ? '<div class="empty">沒有符合的項目。</div>'
+    : `<table>${th(head)}<tbody>${(ST.tblAll || f ? rows : rows.slice(0, CAP)).join('')}</tbody></table>`
+      + (!f && rows.length > CAP ? `<div class="row"><button class="btn small" data-act="tblAll">${ST.tblAll ? '收合' : '看全部 ' + rows.length + ' 筆'}</button></div>` : '');
+  if (ST.tab === 'review') return tbl(['項目', '負責人', '等待原因' + calc('reason'), '到期日', '已等待', '優先', ''], A.review.filter(match).map(i =>
+    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td>${reasonChip(i.reviewReason)}</td><td class="num">${esc(i.end || '—')}</td><td class="num">${i.reviewWait} 天</td><td>${i.prioLabel}</td><td><button class="btn small" data-act="review" data-id="${esc(i.id)}">AI 預審</button></td></tr>`));
   if (ST.tab === 'silent') return (A.silent.some(i => i.noRecord) ? '<div class="note">* 看板上沒有任何更新紀錄（沒有有效的「最近更新日期」、沒有留言），天數從建立日起算；實際可能有子項目的動靜，請向負責人確認。</div>' : '') + tbl(['項目', '負責人', '最後活動', '無動靜', '到期', '風險'], A.silent.filter(match).map(i =>
-    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td class="num">${i.noRecord ? '無紀錄*' : esc(i.lastActivity)}</td><td class="num">${i.noRecord ? '≥ ' : ''}${i.inactive} 天</td><td class="num">${dueText(i)}</td><td>${i.silent === 'high' ? chip('serious').replace('中度', '高') : i.silent === 'mid' ? chip('warn').replace('留意', '中') : '<span class="chip neutral">觀察</span>'}</td></tr>`));
+    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td class="num">${i.noRecord ? '無紀錄*' : esc(i.lastActivity)}</td><td class="num">${i.noRecord ? '≥ ' : ''}${i.inactive} 天</td><td class="num${i.overdue > 0 ? ' od' : ''}">${dueText(i)}</td><td>${i.silent === 'high' ? chip('serious').replace('中度', '高') : i.silent === 'mid' ? chip('warn').replace('留意', '中') : '<span class="chip neutral">觀察</span>'}</td></tr>`));
   if (ST.tab === 'upcoming') return tbl(['項目', '負責人', '到期日', '剩餘', '狀態', '無動靜'], A.upcoming.filter(match).map(i =>
-    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td class="num">${esc(i.end)}</td><td class="num">${dueText(i)}</td><td>${esc(i.status)}</td><td class="num">${i.inactive} 天</td></tr>`));
-  const rows = A.act.filter(match).filter(i => !ST.ownerFilter || i.owner === ST.ownerFilter).sort((a,b) => (a.dueIn ?? 9999) - (b.dueIn ?? 9999));
-  return tbl(['項目', '負責人', '狀態', '到期日', '剩餘／逾期', '無動靜', '優先'], rows.map(i =>
-    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td>${esc(i.status)}</td><td class="num">${esc(i.end || '—')}</td><td class="num">${dueText(i)}</td><td class="num">${i.inactive} 天</td><td>${i.prioLabel}</td></tr>`));
+    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td class="num">${esc(i.end)}</td><td class="num${i.overdue > 0 ? ' od' : ''}">${dueText(i)}</td><td>${esc(i.status)}</td><td class="num">${i.inactive} 天</td></tr>`));
+  const SORT = { name:i => i.name, owner:i => shortName(i.owner), status:i => i.status, end:i => i.end || '9999', due:i => i.dueIn ?? 9999, inactive:i => i.inactive, prio:i => -(i.prio || 0) };
+  const so = ST.sort || { k:'due', dir:1 }, key = SORT[so.k] || SORT.due;
+  const rows = A.act.filter(match).filter(i => !ST.ownerFilter || i.owner === ST.ownerFilter).sort((a, b) => { const x = key(a), y = key(b); return (x < y ? -1 : x > y ? 1 : 0) * so.dir; });
+  const sh = ([t, k]) => `<button class="thb" data-act="sort" data-k="${k}" aria-label="依${t}排序">${t}<span>${so.k === k ? (so.dir > 0 ? ' ▲' : ' ▼') : ''}</span></button>`;   // 欄位標題可點擊排序
+  return tbl([['項目', 'name'], ['負責人', 'owner'], ['狀態', 'status'], ['到期日', 'end'], ['剩餘／逾期', 'due'], ['無動靜', 'inactive'], ['優先', 'prio']].map(sh), rows.map(i =>
+    `<tr><td>${link(i)}</td><td>${esc(shortName(i.owner))}</td><td>${esc(i.status)}</td><td class="num">${esc(i.end || '—')}</td><td class="num${i.overdue > 0 ? ' od' : ''}">${dueText(i)}</td><td class="num${i.silent === 'high' ? ' od' : ''}">${i.inactive} 天</td><td>${i.prioLabel}</td></tr>`));
 }
 
 /* ═══════════════════════════════════════════════════════════
@@ -1335,6 +1846,7 @@ function nudgeItems(A, owner){
     if (i.silent === 'high' || i.silent === 'mid') add(i, `已 ${i.inactive} 天沒更新`);
     if (i.isRunning && i.dueIn !== null && i.dueIn >= 0 && i.dueIn <= 3) add(i, `${i.dueIn === 0 ? '今天' : i.dueIn + ' 天內'}到期`);
     if (i.isReview && i.reviewWait > 14) add(i, `在審核中約 ${i.reviewWait} 天（請確認是否已完成審閱、或需補件）`);
+    if (A.forecast.some(f => f.item.id === i.id) && !i.isReview) add(i, `${i.dueIn === 0 ? '今天' : i.dueIn + ' 天後'}到期，目前進度看起來趕不上（請評估是否需要協助或重排）`);
     if (i.status === CONFIG.statusLabels.paused && i.overdue > 0) add(i, `暫緩且已逾期 ${i.overdue} 天（請說明後續打算）`); });
   return [...set.values()];
 }
@@ -1351,7 +1863,7 @@ function aiRender(){
   const hint = S.aiProvider === 'bridge' ?'<div class="note">按 AI 按鈕時，會把彙整後的摘要交給你電腦上已登入的 Claude（公司帳號），不需要 API key。</div>'
     : aiOn ? '<div class="note">按下 AI 按鈕時，會把彙整後的摘要送到你設定的端點。</div>' : '<div class="note">尚未設定 AI，下方「本機」結果仍可使用。到「設定」可啟用 AI。</div>';
   if (ST.aiTab === 'brief') {
-    box.innerHTML = `<div class="out" id="outLocal">${md(localBrief(A))}</div>${hint}
+    box.innerHTML = `<div class="out" id="outLocal">${richAI(localBrief(A)) || md(localBrief(A))}</div>${hint}
       <div class="row"><button class="btn primary" id="aiBriefGo" ${aiOn ? '' : 'disabled'}>用 AI 寫成口語晨報</button><button class="btn" id="aiCopy">複製本機晨報</button></div><div id="aiOut"></div>`;
     $('#aiCopy').onclick = () => copyText(localBrief(A).replace(/\*\*/g, ''));
     $('#aiBriefGo').onclick = () => runAI('aiOut', () => callLLM(SYS, `以下是今天看板的彙整資料（JSON）。請寫一份主管晨報：先一句話講今天最該處理的事，再列「需要你決策」最多 5 條（每條一行：做什麼、為什麼），再列本週到期與負載風險。資料不足處標「待確認」。\n\n${briefContext(A)}`));
@@ -1369,7 +1881,7 @@ function aiRender(){
       <div class="row"><button class="btn" id="ndAI" ${aiOn ? '' : 'disabled'}>用 AI 改寫語氣</button><button class="btn primary" id="ndCopy">複製草稿</button></div><div id="ndOut"></div>`;
     const fill = () => { ST.nudgeOwner = $('#ndSel').value; $('#ndText').value = localNudge(ST.nudgeOwner, nudgeItems(A, ST.nudgeOwner)); };
     $('#ndSel').onchange = fill; fill();
-    $('#ndCopy').onclick = () => copyText($('#ndText').value);
+    $('#ndCopy').onclick = () => { copyText($('#ndText').value); recordNudge(ST.nudgeOwner, nudgeItems(A, ST.nudgeOwner)); };   // 複製＝視為已催辦，之後在「成效」追蹤回應
     $('#ndAI').onclick = () => runAI('ndOut', async () => { const t = await callLLM(SYS, `請把下面這則給同事的催辦訊息，改寫成客氣但明確的口吻，保留所有項目與日期，不要新增任何資訊，純文字輸出（不要使用 markdown 符號），控制在 200 字內：\n\n${$('#ndText').value}`); $('#ndText').value = t; return '已改寫到上方草稿，請檢視後再自行發送。'; });
   } else {
     box.innerHTML = `<div class="note">可以問像是「這週誰最危險？」「哪些項目應該直接結案？」「哪位同事需要減少負載？」</div>
@@ -1378,9 +1890,10 @@ function aiRender(){
       runAI('askOut', () => callLLM(SYS, `以下是目前進行中項目（欄位：項目|負責人|狀態|到期|逾期|無動靜|優先）：\n${chatContext(A)}\n\n主管的問題：${q}`), q); };
   }
 }
+const AI_KIND = { aiOut:'brief', rvAIout:'review', ndOut:'nudge', askOut:'ask', gmAIout:'gm', wkAIout:'weekly' };
 async function runAI(outId, fn, q){
   const out = $('#' + outId); out.innerHTML = '<div class="out">處理中…</div>';
-  try { const t = await fn(); out.innerHTML = `<div class="out qa">${q ? `<div class="q">問：${esc(q)}</div>` : ''}${md(t)}</div><div class="note">AI 建議僅供參考，請以看板實際內容為準。</div>`; }
+  try { const t = await fn(); logEvent('ai', { kind:AI_KIND[outId] || 'other' }); out.innerHTML = `<div class="out qa">${q ? `<div class="q">問：${esc(q)}</div>` : ''}${richAI(t) || md(t)}</div><div class="note">AI 建議僅供參考，請以看板實際內容為準。</div>`; }
   catch (e) { out.innerHTML = `<div class="out"${e instanceof InfoNote ? '' : ' style="color:var(--crit)"'}>${esc(e.message).replace(/\n/g, '<br>')}</div>`; }
 }
 async function reviewRun(id){
@@ -1397,11 +1910,11 @@ async function reviewRun(id){
       [it.overdue === 0, '相較預計時程', it.overdue ? `逾期 ${it.overdue} 天` : '未逾期'],
       [d.comments.length > 0, '留言／更新', d.comments.length ? `${d.comments.length} 則，最近 ${d.comments[0].at}` : '沒有任何留言'] ];
     const aiOn = aiReady();
-    out.innerHTML = `<div class="out"><b>${link(it)}</b><div class="note">${esc(shortName(it.owner))}｜到期 ${esc(it.end || '—')}｜估計已等待 ${it.reviewWait} 天</div>
+    out.innerHTML = `<div class="out"><b>${link(it)}</b><div class="note">${esc(shortName(it.owner))}｜到期 ${esc(it.end || '—')}｜已等待 ${it.reviewWait} 天｜等待原因 ${reasonChip(it.reviewReason)}</div>
       <div class="chk">${checks.map(([ok, k, v]) => `<div>${ok === true ? '✔' : ok === false ? '✖' : '？'}</div><div><b>${k}</b>：${esc(v)}</div>`).join('')}</div>
       <div class="note">以上是本機檢查，沒有用 AI。看板無法判斷這項是否已線下審過，待確認。</div></div>
       <div class="row"><button class="btn primary" id="rvAI" ${aiOn ? '' : 'disabled'}>AI 預審建議</button></div><div id="rvAIout"></div>`;
-    $('#rvAI').onclick = () => runAI('rvAIout', () => callLLM(SYS, `請替主管預審下面這個送審項目：用 3–5 行摘要做了什麼與成果（資料不足就說資料不足），再給建議：「可核准」「建議先退回補件（列出缺什麼）」或「需當面確認」，附一句理由。\n\n${JSON.stringify({ 項目:it.name, 負責人:shortName(it.owner), 預計時程:`${it.start || ''}～${it.end || ''}`, 完成日期:it.doneDate, 需求確認:it.reqConfirmed, 內容描述:d.desc.slice(0, 2000), 重點事項:d.keyPoints.slice(0, 1000), 成果檔案:d.files, 子項目:sub, 留言:d.comments.slice(0, 8) })}`));
+    $('#rvAI').onclick = () => runAI('rvAIout', () => callLLM(SYS, `請替主管預審下面這個送審項目：用 3–5 行摘要做了什麼與成果（資料不足就說資料不足），再給建議：「可核准」「建議先退回補件（列出缺什麼）」或「需當面確認」，附一句理由。\n\n${JSON.stringify({ 項目:it.name, 負責人:shortName(it.owner), 審核等待原因:it.reviewReason || '未標示', 預計時程:`${it.start || ''}～${it.end || ''}`, 完成日期:it.doneDate, 需求確認:it.reqConfirmed, 內容描述:d.desc.slice(0, 2000), 重點事項:d.keyPoints.slice(0, 1000), 成果檔案:d.files, 子項目:sub, 留言:d.comments.slice(0, 8) })}`));
   } catch (e) { out.innerHTML = `<div class="out"${e instanceof InfoNote ? '' : ' style="color:var(--crit)"'}>${esc(e.message).replace(/\n/g, '<br>')}</div>`; }
 }
 function openAI(tab, id){ ST.aiTab = tab || ST.aiTab; if (id) { ST.aiSel = id; } $('#drawer').classList.add('open'); aiRender(); }
@@ -1420,6 +1933,361 @@ function toast(m){ const t = $('#tip'); t.textContent = m; t.style.display = 'bl
    ═══════════════════════════════════════════════════════════ */
 CONFIG.activeStatuses = Object.values(CONFIG.statusLabels);
 
+/* ═══════════════════════════════════════════════════════════
+   10. 成效紀錄（只存在這台瀏覽器）：用來證明「AI 主動提醒」帶來什麼改變
+       記錄：開啟次數、AI 使用、發現的風險與是否解決、催辦後有沒有回應、預警後的結果
+       不記錄：提示詞、AI 回覆內容、token
+   ═══════════════════════════════════════════════════════════ */
+const K_LOG = 'cfdash.log', K_FLAG = 'cfdash.flags', K_NUD = 'cfdash.nudges', K_FC = 'cfdash.fc', K_IMP = 'cfdash.impact';
+const K_ALL = [K_LOG, K_FLAG, K_NUD, K_FC, K_IMP, 'cfdash.hist'];
+const rdJ = (k, d) => { try { const v = JSON.parse(lsGet(k) || 'null'); return v == null ? d : v; } catch { return d; } };
+const wrJ = (k, v) => lsSet(k, JSON.stringify(v));
+const dow = d => new Date(d + 'T00:00:00Z').getUTCDay();
+const isWk = d => dow(d) >= 1 && dow(d) <= 5;
+const workDays = (a, b) => { let n = 0, d = a; for (let g = 0; d <= b && g < 800; g++, d = addDays(d, 1)) if (isWk(d)) n++; return n; };
+const prevWk = d => { let x = addDays(d, -1); for (let g = 0; g < 7 && !isWk(x); g++) x = addDays(x, -1); return x; };
+
+function logEvent(type, data){
+  if (S.demo) return;
+  const L = rdJ(K_LOG, []); L.push({ t:new Date().toISOString(), d:todayStr(), type, ...(data || {}) }); wrJ(K_LOG, L.slice(-1500));
+}
+function updateFlags(A){                                          // 「AI 抓到的事」：被列入決策／長期審核的項目，記下第一次出現與是否已解決
+  const F = rdJ(K_FLAG, {}), today = A.today, cur = new Map(), actIds = new Set(A.act.map(i => i.id));
+  A.decisions.forEach(d => { if (d.kind === 'item') cur.set(d.item.id, { name:d.item.name, owner:shortName(d.item.owner), kind:d.sev, why:d.headline }); });
+  A.review.filter(i => i.reviewWait > 30).forEach(i => { if (!cur.has(i.id)) cur.set(i.id, { name:i.name, owner:shortName(i.owner), kind:'review', why:`等審核約 ${i.reviewWait} 天` }); });
+  cur.forEach((v, id) => { const f = F[id]; if (!f) F[id] = { ...v, first:today, last:today }; else { f.last = today; f.name = v.name; f.why = v.why; delete f.res; delete f.resAt; } });
+  Object.entries(F).forEach(([id, f]) => { if (!cur.has(id) && !f.res) { f.res = actIds.has(id) ? 'cleared' : 'closed'; f.resAt = today; } });
+  const ks = Object.keys(F); if (ks.length > 400) ks.sort((a, b) => F[a].first < F[b].first ? -1 : 1).slice(0, ks.length - 400).forEach(k => delete F[k]);
+  wrJ(K_FLAG, F);
+}
+function recordNudge(owner, list){                                // 複製催辦草稿＝視為已催辦，之後追蹤有沒有回應
+  if (S.demo || !list || !list.length) return;
+  const N = rdJ(K_NUD, []); N.push({ t:new Date().toISOString(), d:todayStr(), owner:shortName(owner), items:list.map(e => ({ id:e.i.id, name:e.i.name })) });
+  wrJ(K_NUD, N.slice(-120)); logEvent('nudge', { owner:shortName(owner), n:list.length });
+}
+function evalNudges(A){                                           // 催辦後：項目有新動靜＝已回應；結案＝已完成；7 天仍沒動靜＝無回應
+  const N = rdJ(K_NUD, []), byId = new Map(A.act.map(i => [i.id, i])); let ch = false;
+  N.forEach(n => n.items.forEach(it => {
+    if (it.res) return; const cur = byId.get(it.id);
+    if (!cur) { it.res = 'done'; it.resAt = A.today; ch = true; }
+    else if (cur.lastActivity > n.d) { it.res = 'resp'; it.resAt = cur.lastActivity; ch = true; }
+    else if (diffDays(n.d, A.today) >= 7) { it.res = 'none'; it.resAt = A.today; ch = true; }
+  }));
+  if (ch) wrJ(K_NUD, N);
+}
+function updateForecast(A){                                       // 預測命中紀錄：預警過的項目，到期日之後是準時完成還是仍逾期
+  const F = rdJ(K_FC, {}), today = A.today, byId = new Map(A.act.map(i => [i.id, i]));
+  A.forecast.forEach(f => { const x = F[f.item.id] || (F[f.item.id] = { name:f.item.name, owner:shortName(f.item.owner), first:today }); x.end = f.item.end; x.why = f.why.join('、'); });
+  Object.entries(F).forEach(([id, f]) => { if (f.res) return; const cur = byId.get(id);
+    if (cur) { f.seen = today; if (f.end < today) { f.res = 'late'; f.resAt = today; } }
+    else { f.res = today <= f.end ? 'ontime' : 'unk'; f.resAt = today; } });
+  wrJ(K_FC, F);
+}
+function trackAfterLoad(A){                                       // 每次成功載入資料後呼叫（示範資料不記錄）
+  const L = rdJ(K_LOG, []), last = L.filter(e => e.type === 'visit').pop();
+  if (!last || Date.now() - Date.parse(last.t) > 10 * 60 * 1000) logEvent('visit');
+  updateFlags(A); evalNudges(A); updateForecast(A);
+}
+async function fetchRunStats(){                                   // 排程任務的運作實績：數輸出看板各項目有幾天發過更新
+  const O = CONFIG.aiOutput, d = await mondayQuery(`query($i:[ID!]){ items(ids:$i){ id updates(limit:90){ created_at } } }`, { i:Object.values(O.items) });
+  const res = {}; (d.items || []).forEach(x => { const kind = Object.keys(O.items).find(k => String(O.items[k]) === String(x.id)); if (kind) res[kind] = [...new Set((x.updates || []).map(u => toTpeDate(u.created_at)))].sort(); });
+  return res;
+}
+function demoImpact(){                                            // 示範用的假成效數字（固定種子，每次看都一樣）
+  const today = todayStr(); let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+  const days = []; for (let d = addDays(today, -40); d <= today; d = addDays(d, 1)) if (isWk(d)) days.push(d);
+  const log = [], hist = []; const kinds = ['ask', 'review', 'nudge', 'brief', 'ask', 'gm'];
+  days.forEach((d, k) => { log.push({ t:d + 'T01:10:00Z', d, type:'visit' }); if (rnd() > .45) log.push({ t:d + 'T02:00:00Z', d, type:'ai', kind:kinds[Math.floor(rnd() * kinds.length)] });
+    hist.push({ d, overdue:Math.round(22 - k * 0.22 + rnd() * 2), review:Math.round(19 - k * 0.3 + rnd() * 2), upcoming:4, silent:9, decide:4 }); });
+  const flags = {}, mkF = (id, name, owner, firstBack, res, resBack, why) => flags['d' + id] = { name, owner, kind:'serious', why, first:addDays(today, -firstBack), last:addDays(today, res ? -resBack : 0), ...(res ? { res, resAt:addDays(today, -resBack) } : {}) };
+  mkF(1, '示範：系統導入 A', '組員戊', 34, 'cleared', 20, '暫緩且已逾期 139 天'); mkF(2, '示範：料號申請改善', '組員丙', 33, 'cleared', 12, '暫緩且已逾期 169 天');
+  mkF(3, '示範：技術文件追蹤', '組員甲', 30, 'closed', 9, '嚴重逾期 139 天'); mkF(4, '示範：API 串接', '組員乙', 26, 'cleared', 15, '已 62 天沒動靜');
+  mkF(5, '示範：框架規劃', '組員丁', 24, 'cleared', 6, '已 48 天沒動靜'); mkF(6, '示範：看板版面調整', '組員甲', 20, null, 0, '高優先項目逾期 31 天');
+  mkF(7, '示範：客訴表單設計', '組員丙', 18, null, 0, '等審核約 55 天'); mkF(8, '示範：會議流程改版', '組員乙', 14, 'closed', 4, '等審核約 90 天'); mkF(9, '示範：預算彙整', '組員丁', 10, null, 0, '等審核約 36 天');
+  const nudges = [{ d:addDays(today, -25), owner:'組員戊', items:[{ id:'d1', name:'示範：系統導入 A', res:'resp' }, { id:'x1', name:'示範：月報整理', res:'resp' }] },
+    { d:addDays(today, -18), owner:'組員丙', items:[{ id:'d2', name:'示範：料號申請改善', res:'resp' }, { id:'x2', name:'示範：版本管控', res:'none' }] },
+    { d:addDays(today, -11), owner:'組員甲', items:[{ id:'d3', name:'示範：技術文件追蹤', res:'done' }, { id:'d6', name:'示範：看板版面調整', res:'resp' }] },
+    { d:addDays(today, -4), owner:'組員乙', items:[{ id:'d4', name:'示範：API 串接', res:'resp' }, { id:'x3', name:'示範：風險評估表' }] }];
+  const fc = { f1:{ name:'示範：SOP 改版', owner:'組員甲', first:addDays(today, -22), end:addDays(today, -14), res:'ontime' }, f2:{ name:'示範：圖面歸檔', owner:'組員乙', first:addDays(today, -20), end:addDays(today, -10), res:'ontime' },
+    f3:{ name:'示範：供應商評鑑', owner:'組員丙', first:addDays(today, -16), end:addDays(today, -6), res:'late' }, f4:{ name:'示範：教育訓練', owner:'組員丁', first:addDays(today, -12), end:addDays(today, -3), res:'ontime' },
+    f5:{ name:'示範：變更單整理', owner:'組員戊', first:addDays(today, -5), end:addDays(today, 6) } };
+  const runs = { daily:days.slice(-26), alert:days.slice(-18), meeting:days.filter(d => dow(d) === 1).slice(-5) };
+  return { log, flags, nudges, fc, hist, runs, imp:{ base:25, now:5, start:days[0] } };
+}
+function impactStats(){
+  const demo = S.demo, D = demo ? demoImpact() : { log:rdJ(K_LOG, []), flags:rdJ(K_FLAG, {}), nudges:rdJ(K_NUD, []), fc:rdJ(K_FC, {}), hist:ST.hist || [], runs:ST.runs || null, imp:rdJ(K_IMP, {}) };
+  const today = todayStr(), X = { demo, today, hist:D.hist, imp:D.imp || {} };
+  const visits = [...new Set(D.log.filter(e => e.type === 'visit').map(e => e.d))].sort();
+  X.firstDay = visits[0] || null; X.visitDays = visits.length;
+  const ai = D.log.filter(e => e.type === 'ai'); X.aiN = ai.length;
+  X.aiBy = {}; ai.forEach(e => X.aiBy[e.kind] = (X.aiBy[e.kind] || 0) + 1);
+  const fl = Object.values(D.flags); X.flags = Object.entries(D.flags).map(([id, f]) => ({ id, ...f })).sort((a, b) => (b.first > a.first) - (b.first < a.first));
+  X.found = fl.length; X.resolved = fl.filter(f => f.res).length; X.open = X.found - X.resolved;
+  const days = fl.filter(f => f.res).map(f => diffDays(f.first, f.resAt)); X.avgDays = days.length ? Math.round(days.reduce((a, b) => a + b, 0) / days.length) : null;
+  X.nudges = D.nudges; const its = D.nudges.flatMap(n => n.items);
+  X.nudgeItems = its.length; X.nResp = its.filter(i => i.res === 'resp' || i.res === 'done').length; X.nNone = its.filter(i => i.res === 'none').length; X.nPend = its.filter(i => !i.res).length;
+  X.nudgeRate = X.nResp + X.nNone ? Math.round(X.nResp / (X.nResp + X.nNone) * 100) : null;
+  const fc = Object.values(D.fc); X.fcTotal = fc.length; X.fcOn = fc.filter(f => f.res === 'ontime').length; X.fcLate = fc.filter(f => f.res === 'late').length; X.fcPend = fc.filter(f => !f.res).length;
+  const dl = D.runs && D.runs.daily || []; X.runDays = dl.length; X.runsKnown = !!D.runs;
+  let st = 0; const set = new Set(dl); let d = dl.length ? dl[dl.length - 1] : null; while (d && set.has(d)) { st++; d = prevWk(d); } X.streak = st;
+  X.alertDays = (D.runs && D.runs.alert || []).length;
+  const b = Number(X.imp.base), n = Number(X.imp.now), start = X.imp.start || X.firstDay;
+  X.workDays = start ? workDays(start, today) : 0; X.start = start;
+  X.saved = X.imp.base != null && X.imp.now != null && X.imp.base !== '' && start ? Math.max(0, Math.round((b - n) * X.workDays / 6) / 10) : null;   // 小時，取到小數 1 位
+  return X;
+}
+function impactText(X){
+  const L = [`研發文管課｜AI 主動提醒成效摘要（截至 ${X.today}${X.demo ? '，示範數字' : ''}）`];
+  if (X.runsKnown) L.push(`・晨報自動產出：累計 ${X.runDays} 天，連續 ${X.streak} 個工作天`);
+  L.push(`・AI 發現需要處理的項目 ${X.found} 項，其中已解決 ${X.resolved} 項${X.avgDays !== null ? `（平均 ${X.avgDays} 天）` : ''}`);
+  if (X.nudges.length) L.push(`・催辦 ${X.nudges.length} 次、涵蓋 ${X.nudgeItems} 項，${X.nudgeRate !== null ? `回應率 ${X.nudgeRate}%` : '回應追蹤中'}`);
+  if (X.fcOn + X.fcLate) L.push(`・預測式預警：預警後準時完成 ${X.fcOn} 項、仍逾期 ${X.fcLate} 項`);
+  L.push(`・AI 助理使用 ${X.aiN} 次`);
+  if (X.saved !== null) L.push(`・每日查閱 monday 時間：${X.imp.base} 分 → ${X.imp.now} 分，${X.workDays} 個工作天累計約省 ${X.saved} 小時（自行估計）`);
+  return L.join('\n');
+}
+function trendSvg(h){
+  const v = h.slice(-40); if (v.length < 2) return `<div class="empty">紀錄累積中（目前 ${v.length} 天）。每天開啟或排程執行後會自動記錄，滿 2 天即可看到趨勢。</div>`;
+  const W = 640, Hh = 190, pl = 30, pr = 10, pt = 14, pb = 26, mx = Math.max(5, ...v.flatMap(x => [x.overdue, x.review])), X = k => pl + k / (v.length - 1) * (W - pl - pr), Y = n => pt + (Hh - pt - pb) * (1 - n / mx);
+  const line = (key, c) => `<polyline fill="none" stroke="var(${c})" stroke-width="2.5" stroke-linejoin="round" points="${v.map((x, k) => X(k).toFixed(1) + ',' + Y(x[key]).toFixed(1)).join(' ')}"/><circle cx="${X(v.length - 1).toFixed(1)}" cy="${Y(v[v.length - 1][key]).toFixed(1)}" r="4" fill="var(${c})"/><text x="${(X(v.length - 1) - 6).toFixed(1)}" y="${(Y(v[v.length - 1][key]) - 8).toFixed(1)}" text-anchor="end" font-size="11" font-weight="700" fill="var(--ink)">${v[v.length - 1][key]}</text>`;
+  let s = `<svg viewBox="0 0 ${W} ${Hh}" class="flow" role="img" aria-label="逾期與等審核項目數的每日趨勢">`;
+  [0, Math.round(mx / 2), mx].forEach(t => s += `<line x1="${pl}" x2="${W - pr}" y1="${Y(t)}" y2="${Y(t)}" stroke="var(--grid)"/><text x="${pl - 6}" y="${Y(t) + 4}" text-anchor="end" font-size="10" fill="var(--muted)">${t}</text>`);
+  s += `<text x="${pl}" y="${Hh - 8}" font-size="10" fill="var(--muted)">${mmdd(v[0].d)}</text><text x="${W - pr}" y="${Hh - 8}" text-anchor="end" font-size="10" fill="var(--muted)">${mmdd(v[v.length - 1].d)}</text>`;
+  return s + line('overdue', '--crit') + line('review', '--s2') + `</svg><div class="legend"><span><i style="background:var(--crit)"></i>逾期項目</span><span><i style="background:var(--s2)"></i>等你審核</span></div>`;
+}
+function renderImpact(main){
+  const X = impactStats(), I = X.imp, ds = (X.demo ? '（示範數字）' : ''), IM = improveStats();
+  if (!X.demo && !ST.runs && !ST.runsLoading && S.token) { ST.runsLoading = true; fetchRunStats().then(r => { ST.runs = r; }).catch(() => { ST.runs = {}; }).finally(() => { ST.runsLoading = false; if (ST.view === 'impact') render(); }); }
+  const chip = f => f.res ? `<span class="chip okc">已解決</span>` : `<span class="chip warn">處理中</span>`;
+  const rtxt = f => f.res === 'closed' ? '已結案' : f.res === 'cleared' ? '已排除（更新或重排）' : '';
+  const nres = r => r === 'resp' ? '<span class="chip okc">有回應</span>' : r === 'done' ? '<span class="chip okc">已結案</span>' : r === 'none' ? '<span class="chip crit">7 天無回應</span>' : '<span class="chip neutral">追蹤中</span>';
+  main.innerHTML = `
+  <section class="hero"><div class="k">AI 主動提醒帶來的成效${ds}</div>
+    <div class="t">${X.saved === null ? '填入你的使用時間，就能算出省下多少' : `估計已省下約 <span class="big">${X.saved}</span> 小時`}</div>
+    <form class="imp-form" id="impForm"><label>以前每天查 monday 約 <input type="number" min="0" max="600" name="base" value="${I.base ?? ''}" ${X.demo ? 'disabled' : ''}> 分鐘</label><label>現在約 <input type="number" min="0" max="600" name="now" value="${I.now ?? ''}" ${X.demo ? 'disabled' : ''}> 分鐘</label><label>起算日 <input type="date" name="start" value="${esc(I.start || X.firstDay || '')}" ${X.demo ? 'disabled' : ''}></label>${X.demo ? '' : '<button class="btn small primary" type="submit">儲存</button>'}</form>
+    ${X.saved !== null ? `<div class="note">算法：（${I.base} − ${I.now}）分鐘 × ${X.workDays} 個工作天 ÷ 60。這是你自己填的估計，不是系統量測。${calc('impact')}</div>` : `<div class="note"><button type="button" class="linkb" data-calc="impact">成效數字怎麼算？</button></div>`}
+  </section>
+  <section class="kpis five">
+    <div class="kpi tone-${X.runsKnown ? (X.streak ? 'ok' : 'n') : 'n'}"><div class="n">${X.runsKnown ? X.runDays : '—'}</div><div class="l">晨報自動產出（天）</div><div class="d">${X.runsKnown ? `連續 ${X.streak} 個工作天` : (S.token ? '讀取中…' : '需連線 monday')}</div></div>
+    <div class="kpi tone-n"><div class="n">${X.found}</div><div class="l">AI 發現的事項</div><div class="d">已解決 ${X.resolved}${X.avgDays !== null ? `・平均 ${X.avgDays} 天` : ''}</div></div>
+    <div class="kpi tone-n"><div class="n">${X.nudgeRate !== null ? X.nudgeRate + '%' : '—'}</div><div class="l">催辦回應率</div><div class="d">催辦 ${X.nudges.length} 次・${X.nudgeItems} 項</div></div>
+    <div class="kpi tone-n"><div class="n">${X.fcOn + X.fcLate ? Math.round(X.fcOn / (X.fcOn + X.fcLate) * 100) + '%' : '—'}</div><div class="l">預警後準時完成</div><div class="d">準時 ${X.fcOn}・仍逾期 ${X.fcLate}・追蹤中 ${X.fcPend}</div></div>
+    <div class="kpi tone-n"><div class="n">${X.aiN}</div><div class="l">AI 助理使用（次）</div><div class="d">${Object.entries(X.aiBy).map(([k, n]) => ({ ask:'問答', review:'預審', nudge:'催辦改寫', brief:'晨報', gm:'總經理', weekly:'週會' }[k] || k) + ' ' + n).join('・') || '尚無'}</div></div>
+  </section>
+  <section class="grid2">
+    <div class="card"><h2>每日趨勢${hint('逾期與等審核的項目數，每天記一筆（只存在這台瀏覽器）')}</h2>${trendSvg(X.hist)}</div>
+    <div class="card"><h2>預測有沒有準${calc('impact')}</h2>
+      ${Object.values(X.demo ? demoImpact().fc : rdJ(K_FC, {})).slice(-6).reverse().map(f => `<div class="dec" style="grid-template-columns:auto 1fr"><div>${f.res === 'ontime' ? '<span class="chip okc">準時完成</span>' : f.res === 'late' ? '<span class="chip crit">仍逾期</span>' : f.res === 'unk' ? '<span class="chip neutral">未確定</span>' : '<span class="chip warn">追蹤中</span>'}</div><div><div class="h">${esc(f.name)}</div><div class="m2">${esc(f.owner)}・預警日 ${esc(mmdd(f.first))}・到期 ${esc(mmdd(f.end))}</div></div></div>`).join('') || '<div class="empty">還沒有預警紀錄。有項目被判斷可能逾期時會自動開始追蹤。</div>'}</div>
+  </section>
+  <section class="card" style="margin-bottom:16px"><h2>AI 抓到的事 <small>${X.found} 項</small>${calc('impact')}</h2>
+    ${X.flags.length ? `<div class="tw"><table><thead><tr><th>項目</th><th>負責人</th><th>原因</th><th>首次發現</th><th>狀態</th></tr></thead><tbody>${X.flags.slice(0, 10).map(f => `<tr><td>${esc(f.name)}</td><td>${esc(f.owner)}</td><td>${esc(f.why || '')}</td><td class="num">${esc(mmdd(f.first))}</td><td>${chip(f)} <span class="note">${rtxt(f)}</span></td></tr>`).join('')}</tbody></table></div>${X.flags.length > 10 ? `<div class="note">只顯示最近 10 項。</div>` : ''}` : '<div class="empty">還沒有紀錄。開啟儀表板並載入真實資料後會自動累積。</div>'}</section>
+  <section class="card" style="margin-bottom:16px"><h2>催辦追蹤 <small>${X.nudges.length} 次</small>${calc('impact')}</h2>
+    ${X.nudges.length ? X.nudges.slice(-6).reverse().map(n => `<div class="dec" style="grid-template-columns:auto 1fr"><div class="m2" style="white-space:nowrap">${esc(mmdd(n.d))}<br>${esc(n.owner)}</div><div>${n.items.map(it => `<div style="display:flex;gap:8px;justify-content:space-between;align-items:center;padding:2px 0"><span>${esc(it.name)}</span>${nres(it.res)}</div>`).join('')}</div></div>`).join('') : '<div class="empty">還沒有催辦紀錄。到「AI 助理 → 催辦草稿」複製草稿後會開始追蹤。</div>'}</section>
+  <section class="card" style="margin-bottom:16px"><h2>改善專案省下的人工時間 <small>選填${IM.list.length ? `｜每月約 ${IM.monthly} 小時，累計 ${IM.total} 小時` : ''}</small>${calc('manual')}</h2>
+    ${IM.list.length ? IM.list.map(p => `<div class="impv"><div class="impv-h"><b>${esc(p.name)}</b><span class="chip okc">−${p.pct}%</span>${S.demo ? '' : `<button class="btn small ghost" data-act="impvDel" data-id="${esc(p.id)}" aria-label="刪除 ${esc(p.name)}">刪除</button>`}</div>
+      <div class="impv-bar"><i style="width:${p.before ? Math.max(4, p.after / p.before * 100) : 0}%"></i></div>
+      <div class="q-n" style="margin:2px 0 0">每件 ${p.before} 分 → <b>${p.after}</b> 分｜每月約 ${p.perMonth} 件｜每月省 ${r1(p.mh)} 小時｜自 ${esc(mmdd(p.start))} 累計 ${r1(p.th)} 小時</div></div>`).join('') : '<div class="empty">還沒有登錄。monday 沒有工時欄位，所以人工時間需要在這裡登錄：每件改善前後各幾分鐘、每月幾件。</div>'}
+    ${S.demo ? '' : `<details class="adv" style="margin-top:8px"><summary>＋ 新增改善專案</summary>
+      <form class="imp-form" id="impvForm"><label>名稱 <input type="text" name="name" maxlength="40" required style="width:170px"></label><label>改善前每件 <input type="number" name="before" min="0" max="100000" step="any" required> 分</label><label>改善後每件 <input type="number" name="after" min="0" max="100000" step="any" required> 分</label><label>每月約 <input type="number" name="perMonth" min="0" max="100000" step="any" required> 件</label><label>上線日 <input type="date" name="start" value="${esc(todayStr())}"></label><button class="btn small primary" type="submit">新增</button></form></details>`}
+  </section>
+  <div class="row"><button class="btn primary" data-act="impCopy">複製成效摘要</button><button class="btn" data-act="impExport">匯出紀錄（備份）</button>${X.demo ? '' : '<label class="btn" style="cursor:pointer">匯入紀錄<input type="file" id="impImport" accept="application/json" hidden></label><button class="btn ghost" data-act="impClear">清除所有成效紀錄</button>'}</div>
+  <div class="note">成效紀錄只存在這台瀏覽器；請固定用同一個瀏覽器開啟，並定期按「匯出紀錄」備份。不會記錄提示詞、AI 回覆或 token。</div>`;
+}
+
+/* ═══════════════════════════════════════════════════════════
+   11. 時效資料層（總經理頁）：準時完成率、交付週期、真實審核等待、各階段停留、改善成效
+       審核等待與階段停留取自 monday「活動紀錄」（只回溯 90 天）；每次載入會把已結束的審核紀錄存檔，之後歷史越來越長
+   ═══════════════════════════════════════════════════════════ */
+const K_REV = 'cfdash.rev', K_TGT = 'cfdash.targets', K_IMPV = 'cfdash.improve';
+K_ALL.push(K_REV, K_TGT, K_IMPV);
+const med = a => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const r1 = n => n === null || n === undefined ? null : Math.round(n * 10) / 10;
+const tsMs = c => { const s = String(c); if (/^\d{16,18}$/.test(s)) return Number(s) / 1e4; if (/^\d{13}$/.test(s)) return Number(s); const t = Date.parse(s); return Number.isNaN(t) ? null : t; };   // monday 活動紀錄的時間是「秒×10^7」
+async function fetchStatusLog(days){
+  const from = new Date(Date.now() - days * 864e5).toISOString(), to = new Date().toISOString(), out = [];
+  for (let p = 1; p <= 20; p++) {
+    const d = await mondayQuery(`query($b:[ID!],$f:ISO8601DateTime!,$t:ISO8601DateTime!,$p:Int){ boards(ids:$b){ activity_logs(from:$f,to:$t,column_ids:["${CONFIG.columns.status}","${CONFIG.columns.reviewReason}"],limit:500,page:$p){ id event data created_at } } }`, { b:[S.boardId], f:from, t:to, p });
+    const rows = (d.boards && d.boards[0] && d.boards[0].activity_logs) || []; out.push(...rows); if (rows.length < 500) break;
+  }
+  return out;
+}
+function buildFlow(rows, nowMs, days){                            // 狀態變更紀錄 → 每個階段平均停留天數、已結束的審核紀錄
+  const L = CONFIG.statusLabels, active = new Set(CONFIG.activeStatuses), startMs = nowMs - days * 864e5, ev = [];
+  const rr = [];                                                   // 審核等待原因的變更紀錄
+  rows.forEach(x => { if (x.event !== 'update_column_value') return; let d; try { d = JSON.parse(x.data); } catch { return; }
+    if (d && d.column_id === CONFIG.columns.reviewReason) { const t = tsMs(x.created_at); if (t) rr.push({ id:String(d.pulse_id), t, to:(d.value && d.value.label && d.value.label.text) || null }); return; }
+    if (!d || d.column_id !== CONFIG.columns.status) return;
+    const to = d.value && d.value.label && d.value.label.text, fr = d.previous_value && d.previous_value.label && d.previous_value.label.text, t = tsMs(x.created_at);
+    if (to && t) ev.push({ id:String(d.pulse_id), name:d.pulse_name || '', t, to, fr }); });
+  ev.sort((a, b) => a.t - b.t);
+  const by = {}; ev.forEach(e => (by[e.id] = by[e.id] || []).push(e));
+  const dw = {}, vi = {}, episodes = [], day = ms => toTpeDate(new Date(ms).toISOString());
+  Object.entries(by).forEach(([id, list]) => {
+    let state = list[0].fr, since = startMs, known = false;                 // known＝這段的起點有被觀察到（否則只知道「在視窗開始前就在這個狀態」，不算進審核時間）
+    if (!state) { state = list[0].to; since = list[0].t; known = true; list = list.slice(1); }
+    const seg = (s, a, b, k) => { if (!k || !s || !active.has(s)) return; dw[s] = (dw[s] || 0) + (b - a) / 864e5; vi[s] = (vi[s] || 0) + 1; };   // 只統計「起點有被觀察到」的停留，避免被視窗截斷而失真
+    list.forEach(e => { seg(state, since, e.t, known); if (state === L.review && known) episodes.push({ id, name:e.name, s:day(since), e:day(e.t), d:Math.round((e.t - since) / 864e5 * 10) / 10 }); state = e.to; since = e.t; known = true; });
+    seg(state, since, nowMs, known);
+  });
+  // 各原因平均停留：從選了該原因到改成別的原因（或清空）為止；只算有看到起點的
+  const rdw = {}, rvi = {}, ropen = {}, rby = {}; rr.sort((a, b) => a.t - b.t).forEach(e => (rby[e.id] = rby[e.id] || []).push(e));
+  Object.values(rby).forEach(list => { let st = null, since = 0;
+    list.forEach(e => { if (st) { rdw[st] = (rdw[st] || 0) + (e.t - since) / 864e5; rvi[st] = (rvi[st] || 0) + 1; } st = e.to; since = e.t; });
+    if (st) { rdw[st] = (rdw[st] || 0) + (nowMs - since) / 864e5; rvi[st] = (rvi[st] || 0) + 1; ropen[st] = (ropen[st] || 0) + 1; } });
+  const reasons = Object.keys(rdw).map(s => ({ s, avg:rdw[s] / rvi[s], n:rvi[s], open:ropen[s] || 0 })).sort((a, b) => b.avg - a.avg);
+  return { stages:Object.keys(dw).map(s => ({ s, avg:dw[s] / vi[s], n:vi[s] })).sort((a, b) => b.avg - a.avg), episodes, reasons, reasonEvents:rr.length, events:ev.length, items:Object.keys(by).length, days };
+}
+function mergeReviewArchive(eps){                                 // 已結束的審核紀錄存檔（跨過 monday 的 90 天限制）
+  const A = rdJ(K_REV, {}); eps.forEach(e => { A[e.id + '|' + e.s] = { id:e.id, name:(e.name || '').slice(0, 40), s:e.s, e:e.e, d:e.d }; });
+  const ks = Object.keys(A); if (ks.length > 800) ks.sort((a, b) => A[a].e < A[b].e ? -1 : 1).slice(0, ks.length - 800).forEach(k => delete A[k]);
+  wrJ(K_REV, A);
+}
+async function loadFlow(){
+  if (S.demo) { ST.flow = demoFlow(); return; }
+  if (!S.token) return;
+  try { ST.flow = buildFlow(await fetchStatusLog(90), Date.now(), 90); mergeReviewArchive(ST.flow.episodes); }
+  catch (e) { ST.flow = { error:e.message, stages:[], episodes:[], days:90 }; }
+  if (ST.view === 'gm' && ST.A) render();
+}
+const flowData = () => S.demo ? demoFlow() : (ST.flow || null);
+function demoFlow(){
+  const today = todayStr(); let seed = 11; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280, eps = [];
+  for (let k = 0; k < 34; k++) eps.push({ id:'dr' + k, name:'示範項目 ' + k, e:addDays(today, -Math.floor(k * 1.75) - 1), d:Math.round((k <= 16 ? 5 + rnd() * 6 : 9 + rnd() * 10) * 10) / 10 });
+  return { stages:[{ s:'執行中', avg:11.1, n:66 }, { s:'主管審核中', avg:9.8, n:47 }, { s:'被退回重新調整', avg:7.5, n:3 }, { s:'暫緩', avg:19, n:2 }], episodes:eps, reasons:[{ s:'跨單位確認中', avg:8.6, n:6, open:1 }, { s:'待上級／會議決議', avg:7.2, n:3, open:1 }, { s:'排隊待審', avg:4.9, n:21, open:2 }, { s:'資料驗證中', avg:2.8, n:9, open:1 }, { s:'待補充說明', avg:2.1, n:5, open:1 }], reasonEvents:44, events:185, items:76, days:90, demo:true };
+}
+/* 時效指標（全部取自 monday 欄位，不受活動紀錄 90 天限制）
+   團隊完成＝「完成日期」；主管審核完成（歸檔）＝「主管審核日期」；執行天數＝「實際執行」起訖（含頭尾工作天，與 monday「花費工作天數」同算法） */
+const inWin = (d, today, a, b) => !!d && diffDays(d, today) >= a && diffDays(d, today) <= b;
+const execDays = i => i.actStart && i.actEnd && i.actEnd >= i.actStart ? workDays(i.actStart, i.actEnd) : null;
+const reviewDays = i => i.doneDate && i.reviewDate && i.reviewDate >= i.doneDate ? workDays(i.doneDate, i.reviewDate) - 1 : null;   // 完成日到審核日之間「經過」的工作天（當天審完＝0）
+const pctOf = (arr, f) => arr.length ? Math.round(arr.filter(f).length / arr.length * 100) : null;
+function tset(done, A, inRange){                                  // 一段期間的四個時效指標
+  const pool = [...(done || []), ...(A.review || [])];             // 團隊已完成＝已結案＋已送審（還在等審核的也算團隊已交件）
+  const team = pool.filter(i => i.end && inRange(i.doneDate)), closed = (done || []).filter(i => i.end && inRange(i.reviewDate));
+  const ex = pool.filter(i => inRange(i.doneDate)).map(execDays).filter(v => v !== null);
+  const rv = (done || []).filter(i => inRange(i.reviewDate)).map(reviewDays).filter(v => v !== null);
+  return { teamOn:{ v:pctOf(team, i => i.doneDate <= i.end), n:team.length, k:team.filter(i => i.doneDate <= i.end).length }, closeOn:{ v:pctOf(closed, i => i.reviewDate <= i.end), n:closed.length, k:closed.filter(i => i.reviewDate <= i.end).length },
+    exec:{ v:ex.length ? Math.round(med(ex)) : null, n:ex.length }, review:{ v:rv.length ? r1(med(rv)) : null, avg:rv.length ? r1(rv.reduce((x, y) => x + y, 0) / rv.length) : null, n:rv.length } };
+}
+function timeModel(done, A, today, flow){
+  const cur = tset(done, A, d => inWin(d, today, 0, 29)), prev = tset(done, A, d => inWin(d, today, 30, 59)), T = {};
+  ['teamOn', 'closeOn', 'exec', 'review'].forEach(k => T[k] = { cur:cur[k], prev:prev[k] });
+  const act = A.act, pc = n => act.length ? Math.round(n / act.length * 100) : 0, L = CONFIG.statusLabels;
+  const proc = flow && flow.stages ? flow.stages.filter(x => [L.running, L.review, L.rework].includes(x.s) && x.n >= 3) : [];
+  const tot = proc.reduce((n, x) => n + x.avg * x.n, 0), rv = proc.find(x => x.s === L.review);
+  return { ...T, dq:{ fresh:pc(act.filter(i => i.keyPointsAt && diffDays(i.keyPointsAt, today) <= 14).length), hasEnd:pc(act.filter(i => i.end).length) },
+    bottleneck:proc[0] || null, reviewShare:rv && tot ? Math.round(rv.avg * rv.n / tot * 100) : null,             // 流程時間中，有多少是在等主管審核（等待，不是處理）
+    waiting:{ n:A.review.length, oldest:A.review[0] ? A.review[0].reviewWait : 0 } };
+}
+function targetsNow(){
+  if (S.demo) return { teamOn:85, closeOn:75, review:5 };
+  const t = rdJ(K_TGT, {}); return { teamOn:t.teamOn ?? t.onTime ?? null, closeOn:t.closeOn ?? null, review:t.review ?? null };
+}
+function demoImprove(){
+  const today = todayStr();
+  return [{ id:'i1', name:'示範：料號對照表 AI 建檔', before:40, after:8, perMonth:120, start:addDays(today, -75) }, { id:'i2', name:'示範：ECR 會議資料彙整', before:90, after:20, perMonth:8, start:addDays(today, -50) }, { id:'i3', name:'示範：週報自動整理', before:60, after:10, perMonth:4, start:addDays(today, -28) }];
+}
+function improveStats(){
+  const list = (S.demo ? demoImprove() : rdJ(K_IMPV, [])).map(p => ({ ...p })), today = todayStr(); let monthly = 0, total = 0;
+  list.forEach(p => { p.mh = Math.max(0, (p.before - p.after) * p.perMonth / 60); p.th = p.mh * (p.start ? Math.max(0, diffDays(p.start, today) / 30) : 0); p.pct = p.before ? Math.round((p.before - p.after) / p.before * 100) : 0; monthly += p.mh; total += p.th; });
+  return { list, monthly:r1(monthly), total:r1(total) };
+}
+function improveAuto(done, today, A){                             // 持續改善：近 4 個月每月時效，全部取自 monday 欄位
+  const months = []; for (let k = 3; k >= 0; k--) { const d = new Date(today.slice(0, 7) + '-01T00:00:00Z'); d.setUTCMonth(d.getUTCMonth() - k); months.push(d.toISOString().slice(0, 7)); }
+  const rows = months.map(m => ({ m, cur:m === today.slice(0, 7), ...tset(done, A, d => !!d && d.slice(0, 7) === m) }));
+  const first = k => rows.find(r => r[k].v !== null), last = k => [...rows].reverse().find(r => r[k].v !== null);
+  return { rows, first, last };
+}
+function impTrendHtml(AU){                                        // 每月一列，最後一列是「幾月以來」的變化（取代原本的長句）
+  const R = AU.rows.filter(r => r.teamOn.n || r.closeOn.n || r.cur), mo = r => Number(r.m.slice(5)) + ' 月' + (r.cur ? '<small>至今</small>' : '');
+  let thin = false;
+  const cell = (o, u) => { if (o.v === null) return '<td class="num">—</td>'; if (o.n < 3) thin = true;
+    return `<td class="num" data-tip="樣本 ${o.n} 件${o.avg !== undefined && o.avg !== null ? `；平均 ${o.avg}${u}` : ''}">${o.v}${u}${o.n < 3 ? '<small>＊</small>' : ''}</td>`; };
+  const chg = (k, lower) => { const a = AU.first(k), b = AU.last(k); if (!a || !b || a === b) return '<td class="num">—</td>'; const d = r1(b[k].v - a[k].v);
+    return `<td class="num">${d ? `<span class="dlt ${(lower ? d < 0 : d > 0) ? 'good' : 'bad'}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>` : '<span class="dlt flat">持平</span>'}</td>`; };
+  const body = R.map(r => `<tr><td>${mo(r)}</td>${cell(r.teamOn, '%')}${cell(r.closeOn, '%')}${cell(r.exec, ' 天')}${cell(r.review, ' 天')}</tr>`).join('');
+  const from = R.find(r => r.teamOn.v !== null || r.closeOn.v !== null);
+  return `<div class="tw"><table class="mini"><thead><tr><th>月份</th><th class="num">準時交件</th><th class="num">準時結案</th><th class="num" data-tip="實際執行的工作天，中位數">執行天數</th><th class="num" data-tip="完成日期到主管審核日期的工作天，中位數">審核天數</th></tr></thead>
+    <tbody>${body}${from && R.length > 1 ? `<tr class="chg"><td>${Number(from.m.slice(5))} 月以來</td>${chg('teamOn', false)}${chg('closeOn', false)}${chg('exec', true)}${chg('review', true)}</tr>` : ''}</tbody></table></div>
+    ${thin ? '<div class="note" style="margin:2px 0 0">＊當月樣本少於 3 件，僅供參考。</div>' : ''}`;
+}
+function dlt(cur, prev, lower){
+  if (cur === null || prev === null || cur === undefined || prev === undefined) return '';
+  const d = r1(cur - prev); if (!d) return '<span class="dlt flat">持平</span>';
+  return `<span class="dlt ${(lower ? d < 0 : d > 0) ? 'good' : 'bad'}" data-tip="前 30 天為 ${prev}">${d > 0 ? '▲' : '▼'}${Math.abs(d)}</span>`;
+}
+function goalChip(v, target, lower, unit){
+  if (target === null || target === undefined) return '<span class="chip neutral">未設目標</span>';
+  if (v === null) return '';
+  return (lower ? v <= target : v >= target) ? '<span class="chip okc">達標</span>' : `<span class="chip warn">目標 ${lower ? '≤' : '≥'} ${target}${unit}</span>`;
+}
+// 記分卡小卡：foot＝白話說明這個數字是怎麼來的（例如「交件 25 件，15 件準時」）
+const mtile = (label, val, unit, foot, d, goal) => `<div class="mt"><div class="mt-l">${label}</div><div class="mt-v">${val === null ? '—' : val}<small>${val === null ? '' : unit}</small>${d}</div><div class="mt-g">${goal}</div><div class="mt-n">${foot}</div></div>`;
+const few = n => n < 5 ? '（件數少）' : '';
+function speedChip(cur, prev){                                    // 執行時間：直接說「比前期快／慢幾天」
+  if (cur === null || prev === null || cur === undefined || prev === undefined) return '<span class="chip neutral">無前期可比</span>';
+  const d = r1(cur - prev);
+  return !d ? '<span class="chip neutral">與前期相同</span>' : d < 0 ? `<span class="chip okc">比前期快 ${Math.abs(d)} 天</span>` : `<span class="chip warn">比前期慢 ${d} 天</span>`;
+}
+/* 結案沒準時，卡在哪裡？近 90 天「主管審核日期」晚於預計完成日的項目，依日期分三類，再依 monday 原因欄細分 */
+function delayModel(done, today){
+  const W = (done || []).filter(i => i.reviewDate && i.end && i.doneDate && inWin(i.reviewDate, today, 0, 90)), late = W.filter(i => i.reviewDate > i.end);
+  const team = late.filter(i => i.doneDate > i.end), nobuf = late.filter(i => i.doneDate === i.end), rev = late.filter(i => i.doneDate < i.end);
+  const cnt = (arr, k) => { const m = {}; arr.forEach(i => { const r = i[k] || '未標示'; m[r] = (m[r] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+  return { total:W.length, late:late.length, team:team.length, nobuf:nobuf.length, rev:rev.length, teamWhy:cnt(team, 'delayReason'), revWhy:cnt(rev, 'reviewReason') };
+}
+function delayHtml(M){                                            // 一條比例條＋三列（每類一列，原因直接接在後面）
+  if (!M.total) return '';
+  const head = `<div class="q-sub">結案沒準時，卡在哪裡？${calc('delay')}<small>近 90 天結案 ${M.total} 件${M.late ? `，${M.late} 件晚於預計` : '，全部準時'}</small></div>`;
+  if (!M.late) return `<div class="dl-wrap">${head}</div>`;
+  const p = n => Math.round(n / M.late * 100), seg = (n, c, t) => n ? `<i style="width:${p(n)}%;background:var(${c})" data-tip="${t}：${n} 件（${p(n)}%）"></i>` : '';
+  const chips = arr => arr.slice(0, 3).map(([r, n]) => `<span class="rr-i">${r === '未標示' ? '<span class="chip neutral">未標示</span>' : `<span class="chip rr">${esc(r)}</span>`}<b>${n}</b></span>`).join('');
+  const row = (c, t, n, extra) => `<div class="dl-row"><span class="dl-k"><i style="background:var(${c})"></i>${t}<b>${n}</b></span><span class="dl-c">${n ? extra : ''}</span></div>`;
+  return `<div class="dl-wrap">${head}
+    <div class="dl-bar">${seg(M.team, '--s1', '團隊階段已逾期')}${seg(M.nobuf, '--s3', '到期當天才交件')}${seg(M.rev, '--s2', '審核期間超過')}</div>
+    ${row('--s1', '團隊階段已逾期', M.team, chips(M.teamWhy))}
+    ${row('--s3', '到期當天才交件', M.nobuf, '<span class="dl-note">排程沒留審核時間</span>')}
+    ${row('--s2', '審核期間超過', M.rev, chips(M.revWhy))}</div>`;
+}
+function gmLead(T, IM, A){                                        // 30 秒結論：用規則寫，數字都可追溯
+  const p = [], t = T.teamOn.cur.v, c = T.closeOn.cur.v;
+  if (t !== null || c !== null) p.push(`近 30 天${t !== null ? `團隊準時完成率 ${t}%` : ''}${t !== null && c !== null ? '、' : ''}${c !== null ? `結案準時率 ${c}%` : ''}`);
+  if (t !== null && c !== null && t - c >= 10) p.push(`兩者差 ${t - c} 個百分點，主要來自主管審核`);
+  if (T.review.cur.v !== null) p.push(`主管審核中位數 ${T.review.cur.v} 個工作天`);
+  if (A.review.length) p.push(`目前 ${A.review.length} 項等審核`);
+  if (IM.monthly > 0) p.push(`改善專案每月省下約 ${IM.monthly} 小時人工`);
+  return p.length ? p.join('；') + '。' : '資料累積中，請先載入真實資料。';
+}
+function teamHealthRows(A){                                       // 加權負載指數 0–10（重要×即時×規模×跨系統×時間壓力），不是單純件數
+  const W = CONFIG.rules.loadIndexWarn;
+  return `<div class="bars">${A.load.map(o => `<div class="brow" style="grid-template-columns:78px 1fr auto"><div class="nm">${esc(shortName(o.owner))}</div><div class="track" data-tip="${esc(loadTip(o))}"><div class="seg" style="width:${Math.max(1, o.idx * 10).toFixed(1)}%;background:var(${o.allReview ? '--s2' : o.warn ? '--crit' : o.idx >= W - 2 ? '--warn' : '--ok-line'})"></div><div class="thresh" style="left:${W * 10}%" data-tip="偏高門檻：指數 ${W}"></div></div><div>${o.allReview ? '<span class="chip warn">全在等你審核</span>' : o.warn ? `<span class="chip crit">偏高 ${o.idx}${o.over ? '+' : ''}</span>` : `<span class="val">${o.idx}</span>`}</div></div>`).join('')}</div>`;
+}
+const RR_TONE = { '排隊待審':'warn', '待補充說明':'serious' };        // 排隊待審＝主管還沒開始看；待補充說明＝需要負責人動作；其他＝審核進行中
+const reasonChip = r => r ? `<span class="chip ${RR_TONE[r] || 'rr'}">${esc(r)}</span>` : '<span class="chip neutral">未標示</span>';
+function reasonLine(list){
+  const q = list.filter(i => i.reviewReason === '排隊待審' && i.reviewWait > 5).length;
+  return '等待原因：' + reasonCount(list).map(([r, n]) => `${esc(r)} ${n}`).join('・') + (q ? `；其中 <b>${q}</b> 項排隊超過 5 天、尚未開始審` : '');
+}
+function reasonFlowHtml(FL){                                      // 各原因平均停留（取自活動紀錄）
+  if (!FL || FL.error) return '';
+  const R = FL.reasons || [];
+  if (!R.length) return `<div class="q-sub">審核等待原因：各原因平均停留${calc('reason')}</div><div class="empty">「✏️審核等待原因」是新欄位。主管開始標示後，這裡會顯示每種原因平均卡多久。</div>`;
+  const mx = Math.max(1, ...R.map(x => x.avg));
+  return `<div class="q-sub">審核等待原因：各原因平均停留${calc('reason')}</div><div class="bars">${R.map(x => `<div class="brow" style="grid-template-columns:130px 1fr 96px"><div class="nm">${esc(x.s)}</div><div class="track"><div class="seg" style="width:${(x.avg / mx * 100).toFixed(1)}%;background:var(${x.s === '排隊待審' ? '--warn' : '--s1'})" data-tip="${esc(x.s)}：${x.n} 次（目前仍有 ${x.open} 項），平均 ${r1(x.avg)} 天"></div></div><div class="val">${r1(x.avg)} 天／次</div></div>`).join('')}</div>
+    <div class="note">近 ${FL.days || 90} 天、${FL.reasonEvents || 0} 次原因變更。${FL.demo ? '（示範數字）' : ''}</div>`;
+}
+function flowStagesHtml(FL){
+  if (!FL) return '<div class="empty">讀取活動紀錄中…</div>';
+  if (FL.error) return `<div class="empty">尚未取得 monday 活動紀錄（${esc(FL.error)}）。這需要帳號對看板有活動紀錄權限；其他數字不受影響。</div>`;
+  const L = CONFIG.statusLabels, proc = [L.running, L.review, L.rework], rows = FL.stages.filter(x => proc.includes(x.s) || x.s === L.paused);
+  if (!rows.length) return '<div class="empty">這段期間沒有狀態變更紀錄。</div>';
+  const mx = Math.max(1, ...rows.map(x => x.avg)), pr = rows.filter(x => proc.includes(x.s) && x.n >= 3), bn = [...pr].sort((a, b) => b.avg - a.avg)[0];
+  const tot = pr.reduce((n, x) => n + x.avg * x.n, 0), rv = pr.find(x => x.s === L.review), share = rv && tot ? Math.round(rv.avg * rv.n / tot * 100) : null;
+  return `<div class="bars">${rows.map(x => `<div class="brow" style="grid-template-columns:130px 1fr 96px"><div class="nm">${esc(x.s)}${x.s === L.review ? '<span class="note"> 等待</span>' : ''}</div><div class="track"><div class="seg" style="width:${(x.avg / mx * 100).toFixed(1)}%;background:var(${x.s === L.review ? '--s2' : x.s === L.paused ? '--s3' : '--s1'})" data-tip="${esc(x.s)}：${x.n} 次，平均 ${r1(x.avg)} 天"></div></div><div class="val">${r1(x.avg)} 天／次</div></div>`).join('')}</div>
+    ${share !== null ? `<div class="gm-call">流程時間約 <b>${share}%</b> 花在「${esc(L.review)}」：平均每次等 ${r1(rv.avg)} 天（共 ${rv.n} 次）。這是<b>等待</b>時間，不是處理時間，縮短它是改善整體時效最直接的地方。${bn && bn.s !== L.review ? `（單次停留最久的是「${esc(bn.s)}」，平均 ${r1(bn.avg)} 天。）` : ''}</div>` : bn ? `<div class="gm-call">單次停留最久的階段是「<b>${esc(bn.s)}</b>」：平均 ${r1(bn.avg)} 天（共 ${bn.n} 次）。</div>` : ''}
+    <div class="note">近 ${FL.days || 90} 天、${FL.items} 個項目、${FL.events} 次狀態變更。${FL.demo ? '（示範數字）' : 'monday 只保留近 90 天，審核紀錄會在每次載入時自動存檔，累積越久越完整。'}</div>`;
+}
+
 async function load(){
   ST.loading = true; ST.error = null; if (!ST.A) render();
   try {
@@ -1429,6 +2297,8 @@ async function load(){
     else { ST.items = []; ST.done = []; ST.A = null; ST.loading = false; render(); return; }
     ST.A = analyze(ST.items, today);
     ST.hist = S.demo ? [] : histPush(ST.A);                      // 示範資料不記錄趨勢
+    if (!S.demo) { try { trackAfterLoad(ST.A); } catch {} }      // 成效紀錄（失敗不影響主流程）
+    ST.flow = null; loadFlow();                                  // 背景讀取 monday 活動紀錄（階段停留、真實審核等待）；失敗只影響總經理頁的對應區塊
     ST.ai = S.demo ? demoAI() : await fetchAIOutputs().catch(() => ({}));   // 排程任務的 AI 產出；讀不到不影響主流程
     ST.loadedAt = new Date().toLocaleString('zh-TW', { hour12:false, timeZone:CONFIG.timezone });
     const crit = ST.A.decisions.filter(d => d.sev === 'crit').length;
@@ -1448,8 +2318,10 @@ function schedule(){ clearInterval(ST.timer); if (S.auto) ST.timer = setInterval
 
 const dlg = $('#dlg');
 function openSettings(){
+  $('#advAI').open = S.aiProvider === 'anthropic' || S.aiProvider === 'openai';              // 用 API key 的人才自動展開進階區
   $('#fToken').value = S.token; $('#fBoard').value = S.boardId; $('#fProv').value = S.aiProvider; $('#fUrl').value = S.aiUrl; $('#fKey').value = S.aiKey; $('#fModel').value = S.aiModel;
   $('#fDemo').checked = S.demo; $('#fAuto').checked = S.auto; $('#fNotify').checked = S.notify; $('#fRemember').checked = S.remember; $('#testOut').textContent = '';
+  { const t = rdJ(K_TGT, {}); $('#fTgTeam').value = t.teamOn ?? t.onTime ?? ''; $('#fTgClose').value = t.closeOn ?? ''; $('#fTgRev').value = t.review ?? ''; }   // 時效目標（總經理頁）
   syncProv(); dlg.showModal();
   syncBindUi();
   if (ST.localBridge || S.aiProvider === 'bridge') bridgeStatus();
@@ -1545,6 +2417,8 @@ $('#fProv').addEventListener('change', syncProv);
 $('#frm').addEventListener('submit', async () => {
   Object.assign(S, { token:cleanKey($('#fToken').value), boardId:$('#fBoard').value.trim() || String(CONFIG.monday.boardId), aiProvider:$('#fProv').value, aiUrl:$('#fUrl').value.trim(), aiKey:cleanKey($('#fKey').value), aiModel:$('#fModel').value.trim(),
     demo:$('#fDemo').checked, auto:$('#fAuto').checked, notify:$('#fNotify').checked, remember:$('#fRemember').checked });
+  { const num = (v, mx) => { const n = Number(v); return v !== '' && Number.isFinite(n) && n >= 0 && n <= mx ? n : null; };   // 時效目標：留空＝不設
+    wrJ(K_TGT, { teamOn:num($('#fTgTeam').value, 100), closeOn:num($('#fTgClose').value, 100), review:num($('#fTgRev').value, 365) }); }
   if (S.notify && 'Notification' in window && Notification.permission === 'default') { try { await Notification.requestPermission(); } catch {} }
   saveSettings(); schedule(); ST.A = null; load();
 });
@@ -1559,10 +2433,23 @@ $('#btnTheme').onclick = () => { const cur = document.documentElement.dataset.th
 { const t = lsGet('cfdash.theme'); if (t) document.documentElement.dataset.theme = t; }
 $('#aiTabs').addEventListener('click', e => { const b = e.target.closest('[data-ai]'); if (b) { ST.aiTab = b.dataset.ai; aiRender(); } });
 document.addEventListener('click', e => {
+  const cb = e.target.closest('[data-calc]'); if (cb) { e.preventDefault(); openCalc(cb.dataset.calc); return; }   // 計算方式說明
+  const hn = e.target.closest('.hint'); if (hn) { const t = $('#tip'); t.textContent = hn.dataset.tip; t.style.display = 'block'; t.style.left = '50%'; t.style.top = '20px'; t.style.transform = 'translateX(-50%)'; clearTimeout(hn._t); setTimeout(() => { t.style.display = 'none'; t.style.transform = ''; }, 3500); return; }   // 手機沒有 hover：點問號顯示說明
   const b = e.target.closest('[data-act]'); if (!b) return;
   const a = b.dataset.act;
-  if (a === 'tab') { ST.tab = b.dataset.tab; ST.filter = ''; render(); if (b.classList.contains('kpi')) $('.tabs').scrollIntoView({ behavior:'smooth', block:'start' }); }
+  if (a === 'tblAll') { ST.tblAll = !ST.tblAll; render(); }
+  else if (a === 'tab') { ST.tab = b.dataset.tab; ST.filter = ''; ST.tblAll = false; render(); if (b.classList.contains('kpi')) $('.tabs').scrollIntoView({ behavior:'smooth', block:'start' }); }
   else if (a === 'toggleDec') { ST.showAllDec = !ST.showAllDec; render(); }
+  else if (a === 'nudgeAll') { const ow = ST.A.load.map(o => o.owner).filter(o => nudgeItems(ST.A, o).length); ST.nudgeOwner = ow[0]; openAI('nudge'); }
+  else if (a === 'copyBrief') copyText(localBrief(ST.A).replace(/\*\*/g, ''));
+  else if (a === 'toggleFc') { ST.showAllFc = !ST.showAllFc; render(); }
+  else if (a === 'gov') { const g = $('#govDlg'); g.showModal(); g.scrollTop = 0; }
+  else if (a === 'impvDel') { const p = rdJ(K_IMPV, []).find(x => x.id === b.dataset.id); if (p && confirm(`刪除改善專案「${p.name}」？`)) { wrJ(K_IMPV, rdJ(K_IMPV, []).filter(x => x.id !== b.dataset.id)); render(); } }
+  else if (a === 'impCopy') copyText(impactText(impactStats()));
+  else if (a === 'impExport') { const o = {}; K_ALL.forEach(k => { o[k] = S.demo ? null : rdJ(k, null); }); if (S.demo) { toast('示範資料沒有可匯出的紀錄'); return; }
+    const u = URL.createObjectURL(new Blob([JSON.stringify({ app:'cfdash', at:new Date().toISOString(), data:o }, null, 1)], { type:'application/json' })), l = document.createElement('a'); l.href = u; l.download = `cfdash-成效紀錄-${todayStr()}.json`; l.click(); setTimeout(() => URL.revokeObjectURL(u), 3000); }
+  else if (a === 'impClear') { if (confirm('會清除這台瀏覽器上所有成效紀錄（開啟次數、AI 抓到的事、催辦與預測追蹤、每日趨勢、你填的時間）。確定嗎？\n建議先按「匯出紀錄」備份。')) { K_ALL.forEach(lsDel); ST.hist = []; render(); } }
+  else if (a === 'sort') { const kk = b.dataset.k; ST.sort = ST.sort && ST.sort.k === kk ? { k:kk, dir:-ST.sort.dir } : { k:kk, dir:1 }; render(); }
   else if (a === 'settings') openSettings();
   else if (a === 'demo') { S.demo = true; saveSettings(); load(); }
   else if (a === 'review') openAI('review', b.dataset.id);
@@ -1580,16 +2467,33 @@ document.addEventListener('click', e => {
   else if (a === 'gmCopy') copyText(gmText(WKG));
   else if (a === 'gmAI') gmAI();
 });
+document.addEventListener('submit', e => {                        // 成效頁：自己填的每日查閱時間
+  if (e.target.id === 'impvForm') { e.preventDefault(); if (S.demo) return;
+    const f = new FormData(e.target), num = v => { const n = Number(v); return v !== '' && Number.isFinite(n) && n >= 0 && n <= 100000 ? n : null; };
+    const name = String(f.get('name') || '').trim().slice(0, 40), before = num(f.get('before')), after = num(f.get('after')), perMonth = num(f.get('perMonth')), start = /^\d{4}-\d{2}-\d{2}$/.test(f.get('start')) ? f.get('start') : todayStr();
+    if (!name || before === null || after === null || perMonth === null) { toast('請填名稱與三個數字'); return; }
+    const L = rdJ(K_IMPV, []); L.push({ id:'i' + Date.now().toString(36), name, before, after, perMonth, start }); wrJ(K_IMPV, L.slice(-30)); render(); return; }
+  if (e.target.id !== 'impForm') return; e.preventDefault();
+  const f = new FormData(e.target), num = v => { const n = Number(v); return v !== '' && Number.isFinite(n) && n >= 0 && n <= 600 ? n : null; };
+  const base = num(f.get('base')), now = num(f.get('now')), start = /^\d{4}-\d{2}-\d{2}$/.test(f.get('start')) ? f.get('start') : null;
+  if (base === null || now === null) { toast('請填 0–600 的分鐘數'); return; }
+  wrJ(K_IMP, { base, now, start }); render();
+});
 document.addEventListener('change', e => {
   const t = e.target;
+  if (t.id === 'impImport') { const file = t.files && t.files[0]; if (!file) return;
+    file.text().then(txt => { const j = JSON.parse(txt); if (!j || j.app !== 'cfdash' || !j.data) throw new Error('格式不符'); Object.entries(j.data).forEach(([k, v]) => { if (K_ALL.includes(k) && v != null) wrJ(k, v); }); ST.hist = rdJ('cfdash.hist', []); toast('已匯入'); render(); })
+      .catch(() => toast('匯入失敗：這不是成效紀錄檔')); t.value = ''; return; }
   if (t.id === 'wkWin') { ST.wk.win = Number(t.value); render(); }
   else if (t.id === 'wkRoutine') { ST.wk.routine = t.checked; render(); }
   else if (t.id === 'vzFuture') { ST.vz.future = Number(t.value); render(); }
   else if (t.id === 'vzOwner') { ST.vz.owner = t.value; render(); }
+  else if (t.id === 'vzRisk') { ST.vz.onlyRisk = t.checked; render(); }
   else if (t.id === 'vzReview') { ST.vz.showReview = t.checked; render(); }
   else if (t.id === 'vzHeld') { ST.vz.showHeld = t.checked; render(); }
-  else if (t.dataset && t.dataset.wk === 'rep') { const l = wkLocal(); l.rep = l.rep || {}; if (t.checked) l.rep[t.dataset.id] = 1; else delete l.rep[t.dataset.id]; wkSave(l); t.closest('.wk-item').classList.toggle('reported', t.checked); }
+  else if (t.dataset && t.dataset.wk === 'rep') { const l = wkLocal(); l.rep = l.rep || {}; if (t.checked) l.rep[t.dataset.id] = 1; else delete l.rep[t.dataset.id]; wkSave(l); const row = t.closest('.wk-item, .wk-line'); if (row) row.classList.toggle('reported', t.checked); }
 });
+document.addEventListener('toggle', e => { if (e.target.classList && e.target.classList.contains('wk-notebox') && e.target.open) e.target.querySelectorAll('.wk-note').forEach(autosize); }, true);   // 備註框展開時才量高度
 document.addEventListener('input', e => {
   const t = e.target; if (!(t.dataset && t.dataset.wk === 'note')) return;
   const l = wkLocal(); l.note = l.note || {}; if (t.value.trim()) l.note[t.dataset.id] = t.value; else delete l.note[t.dataset.id]; wkSave(l); autosize(t);
@@ -1597,6 +2501,17 @@ document.addEventListener('input', e => {
 document.addEventListener('keydown', e => {
   if (ST.view !== 'weekly' || !ST.wk.focus || /^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName)) return;
   if (e.key === 'ArrowRight') wkStep(1); else if (e.key === 'ArrowLeft') wkStep(-1);
+});
+/* 快捷鍵：1–4 切換頁面、/ 搜尋、R 重新整理、A 開 AI 助理、Esc 關閉 AI 面板（在輸入框、對話框裡不啟用） */
+document.addEventListener('keydown', e => {
+  if (e.ctrlKey || e.metaKey || e.altKey) return;
+  if (e.key === 'Escape') { $('#drawer').classList.remove('open'); return; }
+  if (/^(TEXTAREA|INPUT|SELECT)$/.test(e.target.tagName) || $('#dlg').open || $('#govDlg').open || !ST.A) return;
+  const v = { '1':'dash', '2':'viz', '3':'weekly', '4':'gm', '5':'impact' }[e.key];
+  if (v) { setView(v); e.preventDefault(); }
+  else if (e.key === '/') { const q = $('#q'); if (q) { q.focus(); e.preventDefault(); } }
+  else if (e.key === 'r' || e.key === 'R') { $('#btnRefresh').click(); }
+  else if (e.key === 'a' || e.key === 'A') { openAI('brief'); }
 });
 /* 共用提示框（hover） */
 document.addEventListener('mouseover', e => { const t = e.target.closest('[data-tip]'); const tip = $('#tip'); if (!t) { tip.style.display = 'none'; return; } tip.textContent = t.dataset.tip; tip.style.display = 'block'; });
